@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="IC Filter Plugin"
+   iconfile="logo.png"
+   description="IC Filter Plugin"
+   tooltip="IC Filter Plugin"
+   category="Transform"
+   classname="net.nationalfibre.pentaho.plugin.filter.FilterPluginMeta">
+   <libraries>
+        <library name="ic-filter-plugin.jar"/>
+        <library name="ic-filter.jar"/>
+        <library name="bloomfilter.jar"/>
+   </libraries>
+
+   <localized_category>
+     <category locale="en_US">Transform</category>
+   </localized_category>
+
+   <localized_description>
+     <description locale="en_US">IC Filter Plugin</description>
+   </localized_description>
+
+   <localized_tooltip>
+     <tooltip locale="en_US">IC Filter Plugin</tooltip>
+   </localized_tooltip>
+
+</plugin>
