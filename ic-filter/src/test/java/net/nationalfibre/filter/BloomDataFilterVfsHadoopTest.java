@@ -5,19 +5,19 @@ import net.nationalfibre.filter.provider.VfsFilterProvider;
 
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.VFS;
 import org.junit.Before;
 import org.pentaho.di.core.exception.KettleFileException;
+import org.pentaho.di.core.vfs.KettleVFS;
 
-public class BloomDataFilterVfsTest  extends BaseFilterTest {
+public class BloomDataFilterVfsHadoopTest  extends BaseFilterTest {
 
 	DataFilter filter;
 	FilterConfig config 	= new FilterConfig();
 	FilterProvider provider = null;
 	FileObject folder		= null;
 
-	public BloomDataFilterVfsTest() throws FileSystemException, KettleFileException {
-		folder   = VFS.getManager().resolveFile("tmp://ic-filter/" + getClass().getSimpleName());
+	public BloomDataFilterVfsHadoopTest() throws FileSystemException, KettleFileException {
+		folder	 = KettleVFS.getFileObject("hdfs://bi-hadoopnamednode01.ss:8020/dev-bloomfilters");
 		provider = new VfsFilterProvider(folder.getURL().toString());
 		filter   = new BloomDataFilter(config, provider);
 	}

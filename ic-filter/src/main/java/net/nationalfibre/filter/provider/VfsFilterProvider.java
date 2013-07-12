@@ -8,6 +8,8 @@ import java.io.OutputStream;
 
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.VFS;
+import org.pentaho.di.core.exception.KettleFileException;
+import org.pentaho.di.core.vfs.KettleVFS;
 
 import com.skjegstad.utils.BloomFilter;
 
@@ -20,7 +22,11 @@ public class VfsFilterProvider implements FilterProvider {
 	}
 
 	private FileObject getFile() throws IOException {
-		return VFS.getManager().resolveFile(this.dir);
+		try {
+			return KettleVFS.getFileObject(this.dir);
+		} catch (KettleFileException e) {
+			throw new IOException(e.getMessage(), e);
+		}
 	}
 
 	private FileObject getFile(String name) throws IOException {
