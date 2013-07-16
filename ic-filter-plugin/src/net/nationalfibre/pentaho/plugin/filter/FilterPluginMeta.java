@@ -27,199 +27,196 @@ import org.w3c.dom.Node;
 
 public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface {
 
-	private static String FIELD_PROBABLILITY  = "probability";
-	private static String FIELD_ELEMENTS 	  = "elements";
-	private static String FIELD_LOOKUPS 	  = "lookups";
-	private static String FIELD_DIVISION 	  = "division";
-	private static String FIELD_HASH 		  = "hash";
-	private static String FIELD_TIME 		  = "time";
-	private static String FIELD_URI 		  = "uri";
+    private static String FIELD_PROBABLILITY = "probability";
+    private static String FIELD_ELEMENTS     = "elements";
+    private static String FIELD_LOOKUPS      = "lookups";
+    private static String FIELD_DIVISION     = "division";
+    private static String FIELD_HASH         = "hash";
+    private static String FIELD_TIME         = "time";
+    private static String FIELD_URI          = "uri";
+    private String elements                  = "1000";
+    private String probability               = "0.1";
+    private String uri                       = "tmp://ic-filter/";
+    private String division                  = "60";
+    private String lookups                   = "1440";
+    private String hash                      = "hash";
+    private String time                      = "timestamp";
 
-	private String elements    = "1000";
-	private String probability = "0.1";
+    public FilterPluginMeta() {
+        super();
+    }
 
-	private String uri		= "tmp://ic-filter/";
-	private String division	= "60";
-	private String lookups 	= "1440";
+    public StepDialogInterface getDialog(Shell shell, StepMetaInterface meta, TransMeta transMeta, String name) {
+        return new FilterPluginDialog(shell, meta, transMeta, name);
+    }
 
-	private String hash		= "hash";
-	private String time		= "timestamp";
+    public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta transMeta, Trans disp) {
+        return new FilterPlugin(stepMeta, stepDataInterface, cnr, transMeta, disp);
+    }
 
-	public FilterPluginMeta() {
-		super();
-	}
+    public StepDataInterface getStepData() {
+        return new FilterPluginData();
+    }
 
-	public StepDialogInterface getDialog(Shell shell, StepMetaInterface meta,TransMeta transMeta, String name) {
-		return new FilterPluginDialog(shell, meta, transMeta, name);
-	}
+    @Override
+    public void check(List<CheckResultInterface> remarks, TransMeta transmeta, StepMeta stepMeta, RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info) {
 
-	public StepInterface getStep(StepMeta stepMeta,	StepDataInterface stepDataInterface, int cnr, TransMeta transMeta, Trans disp) {
-		return new FilterPlugin(stepMeta, stepDataInterface, cnr, transMeta, disp);
-	}
+        CheckResult prevSizeCheck = (prev == null || prev.size() == 0)
+                ? new CheckResult(CheckResult.TYPE_RESULT_WARNING, "Not receiving any fields from previous steps!", stepMeta)
+                : new CheckResult(CheckResult.TYPE_RESULT_OK, "Step is connected to previous one, receiving " + prev.size() + " fields", stepMeta);
 
-	public StepDataInterface getStepData() {
-		return new FilterPluginData();
-	}
+        /// See if we have input streams leading to this step!
+        CheckResult inputLengthCheck = (input.length > 0)
+                ? new CheckResult(CheckResult.TYPE_RESULT_OK, "Step is receiving info from other steps.", stepMeta)
+                : new CheckResult(CheckResult.TYPE_RESULT_ERROR, "No input received from other steps!", stepMeta);
 
-	@Override
-	public void check(List<CheckResultInterface> remarks, TransMeta transmeta, StepMeta stepMeta, RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info) {
+        CheckResult hashFieldCheck = ((prev == null) || (prev.indexOfValue(getHash()) < 0))
+                ? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Hash field not found.", stepMeta)
+                : new CheckResult(CheckResult.TYPE_RESULT_OK, "Hash field found.", stepMeta);
 
-		CheckResult prevSizeCheck = (prev == null || prev.size() == 0)
-			? new CheckResult(CheckResult.TYPE_RESULT_WARNING, "Not receiving any fields from previous steps!", stepMeta)
-		    : new CheckResult(CheckResult.TYPE_RESULT_OK, "Step is connected to previous one, receiving " + prev.size() + " fields", stepMeta);
+        CheckResult timeFieldCheck = ((prev == null) || (prev.indexOfValue(getTime()) < 0))
+                ? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Timestamp field not found.", stepMeta)
+                : new CheckResult(CheckResult.TYPE_RESULT_OK, "Timestamp field found.", stepMeta);
 
-		/// See if we have input streams leading to this step!
-		CheckResult inputLengthCheck = (input.length > 0)
-			? new CheckResult(CheckResult.TYPE_RESULT_OK, "Step is receiving info from other steps.", stepMeta)
-			: new CheckResult(CheckResult.TYPE_RESULT_ERROR, "No input received from other steps!", stepMeta);
+        remarks.add(prevSizeCheck);
+        remarks.add(inputLengthCheck);
+        remarks.add(hashFieldCheck);
+        remarks.add(timeFieldCheck);
+    }
 
-		CheckResult hashFieldCheck = ((prev == null) || (prev.indexOfValue(getHash()) < 0))
-			? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Hash field not found.", stepMeta)
-			: new CheckResult(CheckResult.TYPE_RESULT_OK, "Hash field found.", stepMeta);
+    @Override
+    public String getXML() {
+        final StringBuilder bufer = new StringBuilder();
 
-		CheckResult timeFieldCheck = ((prev == null) || (prev.indexOfValue(getTime()) < 0))
-				? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Timestamp field not found.", stepMeta)
-				: new CheckResult(CheckResult.TYPE_RESULT_OK, "Timestamp field found.", stepMeta);
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_PROBABLILITY, getProbability()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_ELEMENTS, getElements()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_DIVISION, getDivision()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_LOOKUPS, getLookups()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_HASH, getHash()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_TIME, getTime()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_URI, getUri()));
 
-		remarks.add(prevSizeCheck);
-		remarks.add(inputLengthCheck);
-		remarks.add(hashFieldCheck);
-		remarks.add(timeFieldCheck);
-	}
-	
-	 @Override
-	public String getXML() {
-	    final StringBuilder bufer = new StringBuilder();
+        return bufer.toString();
+    }
 
-		bufer.append("   ").append(XMLHandler.addTagValue(FIELD_PROBABLILITY, getProbability())); 
-		bufer.append("   ").append(XMLHandler.addTagValue(FIELD_ELEMENTS, getElements())); 
-		bufer.append("   ").append(XMLHandler.addTagValue(FIELD_DIVISION, getDivision()));
-		bufer.append("   ").append(XMLHandler.addTagValue(FIELD_LOOKUPS, getLookups()));
-		bufer.append("   ").append(XMLHandler.addTagValue(FIELD_HASH, getHash())); 
-		bufer.append("   ").append(XMLHandler.addTagValue(FIELD_TIME, getTime())); 
-		bufer.append("   ").append(XMLHandler.addTagValue(FIELD_URI,  getUri()));
+    @Override
+    public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
+        try {
 
-	    return bufer.toString();
-	}
+            setProbability(XMLHandler.getTagValue(stepnode, FIELD_PROBABLILITY));
+            setElements(XMLHandler.getTagValue(stepnode, FIELD_ELEMENTS));
+            setDivision(XMLHandler.getTagValue(stepnode, FIELD_DIVISION));
+            setLookups(XMLHandler.getTagValue(stepnode, FIELD_LOOKUPS));
+            setHash(XMLHandler.getTagValue(stepnode, FIELD_HASH));
+            setTime(XMLHandler.getTagValue(stepnode, FIELD_TIME));
+            setUri(XMLHandler.getTagValue(stepnode, "uri"));
 
-	@Override
-	public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
-		try {
+        } catch (Exception e) {
+            throw new KettleXMLException("Unable to read step info from XML node", e);
+        }
+    }
 
-			setProbability(XMLHandler.getTagValue(stepnode, FIELD_PROBABLILITY));
-			setElements(XMLHandler.getTagValue(stepnode, FIELD_ELEMENTS));
-			setDivision(XMLHandler.getTagValue(stepnode, FIELD_DIVISION));
-			setLookups(XMLHandler.getTagValue(stepnode, FIELD_LOOKUPS));
-			setHash(XMLHandler.getTagValue(stepnode, FIELD_HASH));
-			setTime(XMLHandler.getTagValue(stepnode, FIELD_TIME));
-			setUri(XMLHandler.getTagValue(stepnode, "uri"));
+    @Override
+    public void readRep(Repository rep, ObjectId idStep, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleException {
+        try {
 
-	    } catch (Exception e) {
-	      throw new KettleXMLException("Unable to read step info from XML node", e);
-	    }
-	}
+            setProbability(rep.getStepAttributeString(idStep, FIELD_PROBABLILITY));
+            setElements(rep.getStepAttributeString(idStep, FIELD_ELEMENTS));
+            setDivision(rep.getStepAttributeString(idStep, FIELD_DIVISION));
+            setLookups(rep.getStepAttributeString(idStep, FIELD_LOOKUPS));
+            setHash(rep.getStepAttributeString(idStep, FIELD_HASH));
+            setTime(rep.getStepAttributeString(idStep, FIELD_TIME));
+            setUri(rep.getStepAttributeString(idStep, "uri"));
 
-	@Override
-	public void readRep(Repository rep, ObjectId idStep, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleException {
-		try {
+        } catch (KettleDatabaseException dbe) {
+            throw new KettleException("error reading step with id_step=" + idStep + " from the repository", dbe);
+        } catch (Exception e) {
+            throw new KettleException("Unexpected error reading step with id_step=" + idStep + " from the repository", e);
+        }
+    }
 
-			setProbability(rep.getStepAttributeString(idStep, FIELD_PROBABLILITY));
-			setElements(rep.getStepAttributeString(idStep, FIELD_ELEMENTS));
-			setDivision(rep.getStepAttributeString(idStep, FIELD_DIVISION));
-			setLookups(rep.getStepAttributeString(idStep, FIELD_LOOKUPS));
-			setHash(rep.getStepAttributeString(idStep, FIELD_HASH));
-			setTime(rep.getStepAttributeString(idStep, FIELD_TIME));
-			setUri(rep.getStepAttributeString(idStep, "uri"));
+    @Override
+    public void saveRep(Repository rep, ObjectId idTransformation, ObjectId idStep) throws KettleException {
+        try {
 
-	    } catch (KettleDatabaseException dbe) {
-	      throw new KettleException("error reading step with id_step=" + idStep + " from the repository", dbe);
-	    } catch (Exception e) {
-	      throw new KettleException("Unexpected error reading step with id_step=" + idStep + " from the repository", e);
-	    }
-	}
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_PROBABLILITY, getProbability());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_ELEMENTS, getElements());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_DIVISION, getDivision());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_LOOKUPS, getLookups());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_HASH, getHash());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_TIME, getTime());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_URI, getUri());
 
-	@Override
-	public void saveRep(Repository rep, ObjectId idTransformation, ObjectId idStep) throws KettleException {
-		try {
+        } catch (KettleDatabaseException dbe) {
+            throw new KettleException("Unable to save step information to the repository, id_step=" + idStep, dbe);
+        }
+    }
 
-			rep.saveStepAttribute(idTransformation, idStep, FIELD_PROBABLILITY, getProbability()); 
-			rep.saveStepAttribute(idTransformation, idStep, FIELD_ELEMENTS, getElements()); 
-			rep.saveStepAttribute(idTransformation, idStep, FIELD_DIVISION, getDivision());
-			rep.saveStepAttribute(idTransformation, idStep, FIELD_LOOKUPS, getLookups());
-			rep.saveStepAttribute(idTransformation, idStep, FIELD_HASH, getHash()); 
-			rep.saveStepAttribute(idTransformation, idStep, FIELD_TIME, getTime()); 
-			rep.saveStepAttribute(idTransformation, idStep, FIELD_URI,  getUri());
+    @Override
+    public void setDefault() {
+        this.elements    = "1000";
+        this.probability = "0.1";
 
-	    } catch (KettleDatabaseException dbe) {
-	      throw new KettleException("Unable to save step information to the repository, id_step=" + idStep, dbe);
-	    }
-	}
+        this.uri        = "tmp://ic-filter/";
+        this.division   = "60";
+        this.lookups    = "1440";
+        this.hash       = "hash";
+        this.time       = "timestamp";
+    }
 
-	@Override
-	public void setDefault() {
-		this.elements 	 = "1000";
-		this.probability = "0.1";
+    public String getElements() {
+        return elements;
+    }
 
-		this.uri	   	= "tmp://ic-filter/";
-		this.division  	= "60";
-		this.lookups  	= "1440";
-		this.hash		= "hash";
-		this.time		= "timestamp";
-	}
+    public void setElements(String expectedNumberOfElements) {
+        this.elements = expectedNumberOfElements;
+    }
 
-	public String getElements() {
-		return elements;
-	}
+    public String getProbability() {
+        return probability;
+    }
 
-	public void setElements(String expectedNumberOfElements) {
-		this.elements = expectedNumberOfElements;
-	}
+    public void setProbability(String falsePositiveProbability) {
+        this.probability = falsePositiveProbability;
+    }
 
-	public String getProbability() {
-		return probability;
-	}
+    public String getUri() {
+        return uri;
+    }
 
-	public void setProbability(String falsePositiveProbability) {
-		this.probability = falsePositiveProbability;
-	}
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
 
-	public String getUri() {
-		return uri;
-	}
+    public String getDivision() {
+        return division;
+    }
 
-	public void setUri(String uri) {
-		this.uri = uri;
-	}
+    public void setDivision(String timeDivision) {
+        this.division = timeDivision;
+    }
 
-	public String getDivision() {
-		return division;
-	}
+    public String getLookups() {
+        return lookups;
+    }
 
-	public void setDivision(String timeDivision) {
-		this.division = timeDivision;
-	}
+    public void setLookups(String numberOfLookups) {
+        this.lookups = numberOfLookups;
+    }
 
-	public String getLookups() {
-		return lookups;
-	}
+    public String getHash() {
+        return hash;
+    }
 
-	public void setLookups(String numberOfLookups) {
-		this.lookups = numberOfLookups;
-	}
+    public void setHash(String hashFieldName) {
+        this.hash = hashFieldName;
+    }
 
-	public String getHash() {
-		return hash;
-	}
+    public String getTime() {
+        return time;
+    }
 
-	public void setHash(String hashFieldName) {
-		this.hash = hashFieldName;
-	}
-
-	public String getTime() {
-		return time;
-	}
-
-	public void setTime(String timeFieldName) {
-		this.time = timeFieldName;
-	}
+    public void setTime(String timeFieldName) {
+        this.time = timeFieldName;
+    }
 }

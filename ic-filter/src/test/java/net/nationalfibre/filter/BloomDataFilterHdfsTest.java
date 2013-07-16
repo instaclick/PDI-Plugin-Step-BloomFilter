@@ -11,40 +11,40 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.Before;
 
-public class BloomDataFilterHdfsTest  extends BaseFilterTest {
+public class BloomDataFilterHdfsTest extends BaseFilterTest {
 
-	DataFilter filter;
-	FilterProvider provider = null;
-	FileSystem hdfs			= null;
-	String folder			= null;
-	FilterConfig config 	= new FilterConfig();
-	Configuration hdfsConf 	= new Configuration();
+    DataFilter filter;
+    FilterProvider provider = null;
+    FileSystem hdfs         = null;
+    String folder           = null;
+    FilterConfig config     = new FilterConfig();
+    Configuration hdfsConf  = new Configuration();
 
-	public BloomDataFilterHdfsTest() throws IOException {
-		folder = "hdfs://bi-hadoopnamednode01.ss:8020/dev-bloomfilters/" + getClass().getSimpleName();
+    public BloomDataFilterHdfsTest() throws IOException {
+        folder = "hdfs://bi-hadoopnamednode01.ss:8020/dev-bloomfilters/" + getClass().getSimpleName();
 
-		hdfsConf.set("fs.default.name", folder);
+        hdfsConf.set("fs.default.name", folder);
 
-		hdfs     = FileSystem.get(hdfsConf);
-		provider = new HdfsFilterProvider(folder);
-		filter   = new BloomDataFilter(config, provider);
-	}
+        hdfs     = FileSystem.get(hdfsConf);
+        provider = new HdfsFilterProvider(folder);
+        filter   = new BloomDataFilter(config, provider);
+    }
 
-	@Before
-	@SuppressWarnings("deprecation")
-	public void setUp() throws IOException {
+    @Before
+    @SuppressWarnings("deprecation")
+    public void setUp() throws IOException {
 
-		if(hdfs == null || ! hdfs.exists(new Path(folder))) {
-			return;
-		}
+        if (hdfs == null || ! hdfs.exists(new Path(folder))) {
+            return;
+        }
 
-		for (FileStatus status : hdfs.listStatus(new Path(folder))) {
-			hdfs.delete(status.getPath());
-		}
-	}
+        for (FileStatus status : hdfs.listStatus(new Path(folder))) {
+            hdfs.delete(status.getPath());
+        }
+    }
 
-	@Override
-	protected DataFilter getFilter() {
-		return filter;
-	}
+    @Override
+    protected DataFilter getFilter() {
+        return filter;
+    }
 }

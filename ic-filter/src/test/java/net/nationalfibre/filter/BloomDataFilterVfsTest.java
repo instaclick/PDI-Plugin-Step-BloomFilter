@@ -9,30 +9,30 @@ import org.apache.commons.vfs.VFS;
 import org.junit.Before;
 import org.pentaho.di.core.exception.KettleFileException;
 
-public class BloomDataFilterVfsTest  extends BaseFilterTest {
+public class BloomDataFilterVfsTest extends BaseFilterTest {
 
-	DataFilter filter;
-	FilterConfig config 	= new FilterConfig();
-	FilterProvider provider = null;
-	FileObject folder		= null;
+    DataFilter filter;
+    FilterProvider provider = null;
+    FileObject folder       = null;
+    FilterConfig config     = new FilterConfig();
 
-	public BloomDataFilterVfsTest() throws FileSystemException, KettleFileException {
-		folder   = VFS.getManager().resolveFile("tmp://ic-filter/" + getClass().getSimpleName());
-		provider = new VfsFilterProvider(folder.getURL().toString());
-		filter   = new BloomDataFilter(config, provider);
-	}
+    public BloomDataFilterVfsTest() throws FileSystemException, KettleFileException {
+        folder      = VFS.getManager().resolveFile("tmp://ic-filter/" + getClass().getSimpleName());
+        provider    = new VfsFilterProvider(folder.getURL().toString());
+        filter      = new BloomDataFilter(config, provider);
+    }
 
-	@Before
-	public void setUp() throws FileSystemException {
-		if (folder != null && folder.exists()) {
-			for (FileObject file : folder.getChildren()) {
-				file.delete();
-			} 
-		}
-	}
+    @Before
+    public void setUp() throws FileSystemException {
+        if (folder != null && folder.exists()) {
+            for (FileObject file : folder.getChildren()) {
+                file.delete();
+            }
+        }
+    }
 
-	@Override
-	protected DataFilter getFilter() {
-		return filter;
-	}
+    @Override
+    protected DataFilter getFilter() {
+        return filter;
+    }
 }

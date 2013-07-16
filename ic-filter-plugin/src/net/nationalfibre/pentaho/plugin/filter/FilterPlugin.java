@@ -22,155 +22,156 @@ import org.pentaho.di.trans.step.StepMetaInterface;
 
 public class FilterPlugin extends BaseStep implements StepInterface {
 
-	private FilterPluginData data;
-	private FilterPluginMeta meta;
+    private FilterPluginData data;
+    private FilterPluginMeta meta;
+    private DataFilter filter;
+    private Data filterData;
+    private Integer hashFieldIndex  = null;
+    private Integer timeFielIndex   = null;
+    private String hashValue        = null;
+    private Long timeValue          = null;
 
-	private DataFilter filter;
-	private Data filterData;
+    public FilterPlugin(StepMeta s, StepDataInterface stepDataInterface, int c, TransMeta t, Trans dis) {
+        super(s, stepDataInterface, c, t, dis);
+    }
 
-	private Integer hashFieldIndex = null;
-	private Integer timeFielIndex  = null;
-	private String hashValue 	   = null;
-	private Long timeValue  	   = null;
+    @Override
+    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
 
-	public FilterPlugin(StepMeta s, StepDataInterface stepDataInterface, int c, TransMeta t, Trans dis) {
-		super(s, stepDataInterface, c, t, dis);
-	}
+        meta = (FilterPluginMeta) smi;
+        data = (FilterPluginData) sdi;
 
-	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
+        Object[] r = getRow(); // get row, blocks when needed! no more input to be expected...
 
-		meta = (FilterPluginMeta) smi;
-		data = (FilterPluginData) sdi;
+        if (r == null && filter != null) {
 
-		Object[] r = getRow(); // get row, blocks when needed! no more input to be expected...
+            this.log.logDebug("Flush filters");
 
-		if (r == null && filter != null) {
+            filter.flush();
+        }
 
-			this.log.logDebug("Flush filters");
+        if (r == null) {
+            setOutputDone();
 
-			filter.flush();
-		}
+            return false;
+        }
 
-		if (r == null) {
-			setOutputDone();
+        if (first) {
+            first = false;
 
-			return false;
-		}
+            Integer elements     = Integer.parseInt(meta.getElements());
+            Integer lookups      = Integer.parseInt(meta.getLookups());
+            Integer division     = Integer.parseInt(meta.getDivision());
+            Float probability    = Float.parseFloat(meta.getProbability());
+            String hashFieldName = meta.getHash();
+            String timeFieldName = meta.getTime();
+            String uriStr        = meta.getUri();
+            URI uri              = null;
 
-		if (first) {
-			first = false;
+            if (hashFieldName == null) {
+                throw new FilterException("Unable to retrieve hash field name");
+            }
 
-			Integer elements	 = Integer.parseInt(meta.getElements());
-			Integer lookups		 = Integer.parseInt(meta.getLookups());
-			Integer division	 = Integer.parseInt(meta.getDivision());
-			Float probability	 = Float.parseFloat(meta.getProbability());
-			String hashFieldName = meta.getHash();
-			String timeFieldName = meta.getTime();
-			String uriStr		 = meta.getUri();
-			URI uri				 = null;
+            if (timeFieldName == null) {
+                throw new FilterException("Unable to retrieve timestamp field name");
+            }
 
-			if (hashFieldName == null) {
-				throw new FilterException("Unable to retrieve hash field name");
-			}
+            if (uriStr == null) {
+                throw new FilterException("Unable to retrieve filter uri");
+            }
 
-			if (timeFieldName == null) {
-				throw new FilterException("Unable to retrieve timestamp field name");
-			}
+            try {
+                uri = new URI(uriStr);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
 
-			if (uriStr == null) {
-				throw new FilterException("Unable to retrieve filter uri");
-			}
+            ProviderType type = ProviderType.VFS;
+            boolean forceVfs  = Boolean.parseBoolean(getVariable("ic.filter.enabled.provider.hdfs", "false"));
 
-			try {
-				uri = new URI(uriStr);
-			} catch (URISyntaxException e) {
-				throw new RuntimeException(e.getMessage(), e);
-			}
+            if ("hdfs".equals(uri.getScheme()) && forceVfs) {
+                type = ProviderType.HDFS;
+            }
 
-			ProviderType type = ProviderType.VFS;
-			boolean forceVfs  = Boolean.parseBoolean(getVariable("ic.filter.enabled.provider.hdfs", "false"));
+            FilterConfig config = FilterConfig.create()
+                .withFalsePositiveProbability(probability)
+                .withExpectedNumberOfElements(lookups)
+                .withNumberOfLookups(lookups)
+                .withTimeDivision(division)
+                .withProvider(type)
+                .withURI(uriStr);
 
-			if("hdfs".equals(uri.getScheme()) && forceVfs) {
-				type = ProviderType.HDFS;
-			}
+            filter = FilterFactory.createFilter(config);
 
-			FilterConfig config = FilterConfig.create()
-				.withFalsePositiveProbability(probability)
-				.withExpectedNumberOfElements(lookups)
-				.withNumberOfLookups(lookups)
-				.withTimeDivision(division)
-				.withProvider(type)
-				.withURI(uriStr);
+            log.logDetailed(String.format("Filter URI (%s)", uriStr));
+            log.logDetailed(String.format("Provider (%s)", type));
+            log.logDetailed(String.format("Expected Number Of Elements (%s)", elements));
+            log.logDetailed(String.format("False Positive Probability (%s)", probability));
+            log.logDetailed(String.format("Time Div (%s)", division));
+            log.logDetailed(String.format("Number Of Lookups (%s)", lookups));
 
-			filter = FilterFactory.createFilter(config);
+            data.outputRowMeta  = (RowMetaInterface) getInputRowMeta().clone();
+            hashFieldIndex      = data.outputRowMeta.indexOfValue(hashFieldName);
+            timeFielIndex       = data.outputRowMeta.indexOfValue(timeFieldName);
 
-			log.logDetailed(String.format("Filter URI (%s)", uriStr));
-			log.logDetailed(String.format("Provider (%s)", type));
-			log.logDetailed(String.format("Expected Number Of Elements (%s)", elements));
-			log.logDetailed(String.format("False Positive Probability (%s)", probability));
-			log.logDetailed(String.format("Time Div (%s)", division));
-			log.logDetailed(String.format("Number Of Lookups (%s)", lookups));
+            meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
 
-			data.outputRowMeta	= (RowMetaInterface) getInputRowMeta().clone();
-			hashFieldIndex		= data.outputRowMeta.indexOfValue(hashFieldName);
-			timeFielIndex		= data.outputRowMeta.indexOfValue(timeFieldName);
+            if (hashFieldIndex == null || hashFieldIndex < 0) {
+                throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
+            }
 
-			meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
+            if (timeFielIndex == null || timeFielIndex < 0) {
+                throw new FilterException("Unable to retrieve time field : " + timeFieldName);
+            }
+        }
 
-			if (hashFieldIndex == null || hashFieldIndex< 0) {
-				throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
-			}
+        hashValue  = String.valueOf(r[hashFieldIndex]);
+        timeValue  = Long.parseLong(String.valueOf(r[timeFielIndex]));
+        filterData = new Data(hashValue, timeValue);
 
-			if (timeFielIndex == null || timeFielIndex< 0) {
-				throw new FilterException("Unable to retrieve time field : " + timeFieldName);
-			}
-		}
+        if ( ! filter.add(filterData)) {
+            log.logDebug(getLinesRead() + " - Ignore row : " + filterData.getHash());
 
-		hashValue  = String.valueOf(r[hashFieldIndex]);
-		timeValue  = Long.parseLong(String.valueOf(r[timeFielIndex]));
-		filterData = new Data(hashValue, timeValue);
+            return true;
+        }
 
-		if ( ! filter.add(filterData)) {
-			log.logDebug(getLinesRead() + " - Ignore row : " + filterData.getHash());
+        putRow(data.outputRowMeta, r);
 
-			return true;
-		}
+        return true;
+    }
 
-		putRow(data.outputRowMeta, r);
+    @Override
+    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
+        meta = (FilterPluginMeta) smi;
+        data = (FilterPluginData) sdi;
 
-		return true;
-	}
+        return super.init(smi, sdi);
+    }
 
-	public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-		meta = (FilterPluginMeta) smi;
-		data = (FilterPluginData) sdi;
+    @Override
+    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
+        meta = (FilterPluginMeta) smi;
+        data = (FilterPluginData) sdi;
 
-		return super.init(smi, sdi);
-	}
+        super.dispose(smi, sdi);
+    }
 
-	public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-		meta = (FilterPluginMeta) smi;
-		data = (FilterPluginData) sdi;
+    // Run is were the action happens!
+    public void run() {
+        logBasic("Starting to run...");
+        try {
 
-		super.dispose(smi, sdi);
-	}
+            while (processRow(meta, data) && !isStopped());
 
-	// Run is were the action happens!
-	public void run() {
-		logBasic("Starting to run...");
-		try {
-
-			while (processRow(meta, data) && ! isStopped());
-
-		} catch (Exception e) {
-			logError("Unexpected error : " + e.toString());
-			logError(Const.getStackTracker(e));
-			setErrors(1);
-			stopAll();
-		} finally {
-			dispose(meta, data);
-			logBasic("Finished, processing " + getLinesRead() + " rows");
-			markStop();
-		}
-	}
+        } catch (Exception e) {
+            logError("Unexpected error : " + e.toString());
+            logError(Const.getStackTracker(e));
+            setErrors(1);
+            stopAll();
+        } finally {
+            dispose(meta, data);
+            logBasic("Finished, processing " + getLinesRead() + " rows");
+            markStop();
+        }
+    }
 }

@@ -2,86 +2,85 @@ package net.nationalfibre.filter;
 
 public class FilterConfig {
 
-	private int expectedNumberOfElements 	= 1000;
-	private double falsePositiveProbability = 0.1;
+    private int expectedNumberOfElements    = 1000;
+    private double falsePositiveProbability = 0.1;
+    private String uri;
+    private double timeDivision     = 60;
+    private int numberOfLookups     = 1440;
+    private FilterType filter       = FilterType.BLOMM;
+    private ProviderType provider   = ProviderType.VFS;
 
-	private String uri;
-	private double timeDivision	= 60;
-	private int numberOfLookups = 1440;
-	private FilterType filter	= FilterType.BLOMM;
-	private ProviderType provider= ProviderType.VFS;
+    public int getExpectedNumberOfElements() {
+        return expectedNumberOfElements;
+    }
 
-	public int getExpectedNumberOfElements() {
-		return expectedNumberOfElements;
-	}
+    public FilterConfig withExpectedNumberOfElements(int expectedNumberOfElements) {
+        this.expectedNumberOfElements = expectedNumberOfElements;
 
-	public FilterConfig withExpectedNumberOfElements(int expectedNumberOfElements) {
-		this.expectedNumberOfElements = expectedNumberOfElements;
+        return this;
+    }
 
-		return this;
-	}
+    public double getFalsePositiveProbability() {
+        return falsePositiveProbability;
+    }
 
-	public double getFalsePositiveProbability() {
-		return falsePositiveProbability;
-	}
+    public FilterConfig withFalsePositiveProbability(double falsePositiveProbability) {
+        this.falsePositiveProbability = falsePositiveProbability;
 
-	public FilterConfig withFalsePositiveProbability(double falsePositiveProbability) {
-		this.falsePositiveProbability = falsePositiveProbability;
+        return this;
+    }
 
-		return this;
-	}
+    public int getNumberOfLookups() {
+        return numberOfLookups;
+    }
 
-	public int getNumberOfLookups() {
-		return numberOfLookups;
-	}
+    public FilterConfig withNumberOfLookups(int lookups) {
+        this.numberOfLookups = lookups;
 
-	public FilterConfig withNumberOfLookups(int lookups) {
-		this.numberOfLookups = lookups;
+        return this;
+    }
 
-		return this;
-	}
+    public double getTimeDivision() {
+        return timeDivision;
+    }
 
-	public double getTimeDivision() {
-		return timeDivision;
-	}
+    public FilterConfig withTimeDivision(double timeDivision) {
+        this.timeDivision = timeDivision;
 
-	public FilterConfig withTimeDivision(double timeDivision) {
-		this.timeDivision = timeDivision;
+        return this;
+    }
 
-		return this;
-	}
+    public String getURI() {
+        return uri;
+    }
 
-	public String getURI() {
-		return uri;
-	}
+    public FilterConfig withURI(String uri) {
+        this.uri = uri;
 
-	public FilterConfig withURI(String uri) {
-		this.uri = uri;
+        return this;
+    }
 
-		return this;
-	}
-	
-	public FilterType getFilter() {
-		return filter;
-	}
+    public FilterType getFilter() {
+        return filter;
+    }
 
-	public FilterConfig withFilter(FilterType filter) {
-		this.filter = filter;
+    public FilterConfig withFilter(FilterType filter) {
+        this.filter = filter;
 
-		return this;
-	}
+        return this;
+    }
 
-	public ProviderType getProvider() {
-		return provider;
-	}
+    public ProviderType getProvider() {
+        return provider;
+    }
 
-	public FilterConfig withProvider(ProviderType provider) {
-		this.provider = provider;
+    public FilterConfig withProvider(ProviderType provider) {
+        this.provider = provider;
 
-		return this;
-	}
+        return this;
+    }
 
-	public static FilterConfig create() {
-		return new FilterConfig();
-	}
+    public static FilterConfig create() {
+        return new FilterConfig();
+    }
 }

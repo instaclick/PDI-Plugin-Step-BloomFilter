@@ -7,29 +7,29 @@ import net.nationalfibre.filter.provider.VfsFilterProvider;
 
 public class FilterFactory {
 
-	private static FilterProvider createProvider(FilterConfig config) {
+    private static FilterProvider createProvider(FilterConfig config) {
 
-		if (config.getProvider() == ProviderType.HDFS) {
+        if (config.getProvider() == ProviderType.HDFS) {
             return new HdfsFilterProvider(config.getURI());
-		}
+        }
 
-		if (config.getProvider() == ProviderType.VFS) {
+        if (config.getProvider() == ProviderType.VFS) {
             return new VfsFilterProvider(config.getURI());
-		}
+        }
 
-		if (config.getProvider() == ProviderType.MEMORY) {
+        if (config.getProvider() == ProviderType.MEMORY) {
             return new InMemoryFilterProvider();
-		}
+        }
 
-		throw new RuntimeException("Invalid provider : " + config.getProvider());
-	}
+        throw new RuntimeException("Invalid provider : " + config.getProvider());
+    }
 
-	public static DataFilter createFilter(FilterConfig config) {
+    public static DataFilter createFilter(FilterConfig config) {
 
-		if (config.getFilter() == FilterType.BLOMM) {
+        if (config.getFilter() == FilterType.BLOMM) {
             return new BloomDataFilter(config, createProvider(config));
-		}
+        }
 
-		throw new RuntimeException("Invalid filter : " + config.getFilter());
-	}
+        throw new RuntimeException("Invalid filter : " + config.getFilter());
+    }
 }
