@@ -1,13 +1,16 @@
-# phentaho configuration
+# pentaho configuration
 
-ic.filter.elements      = 1000              # integer   -> Expected number of elements
-ic.filter.probability   = 0.1               # double    -> False positive probability
-ic.filter.lookups       = 1440              # integer   -> Number of times to lookups into files
-ic.filter.field.hash    = hash              # string    -> hash field
-ic.filter.field.time    = timestamp         # string    -> timestamp field
-ic.filter.directory     = tmp://ic-filter/  # string    -> URL where to store filters
-ic.filter.provider      = VFS               # string    -> filter provider (VFS / MEMORY)
-ic.filter.division      = 60                # double    -> The integer result of (${row.timestamp} / ${division}) will be the filter hash code
+# Configuration
+Expected number of elements = 1000              # integer   -> Expected number of elements
+False positive probability  = 0.1               # double    -> False positive probability
+Number of lookups           = 1440              # integer   -> Number of times to lookups into files
+Hash Field                  = hash              # string    -> hash field
+Timestamp Field             = timestamp         # string    -> timestamp field
+URL to store filters        = tmp://ic-filter/  # string    -> Filters URI
+Filter Div                  = 60                # double    -> The integer result of (${row.timestamp} / ${division}) will be the filter hash code
+                                                # Epoch times divided by 60 equals epoch minutes
+# Variables
+ic.filter.enabled.provider.hdfs = false # boolean   -> Enable HdfsFilterProvider filter provider
 
 #### expected logging
 #### - IC Filter.0 - Filter URI (tmp://ic-filter/)

@@ -27,15 +27,15 @@ import org.w3c.dom.Node;
 
 public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface {
 
-	private static String FIELD_PROBABLILITY 	= "probability";
-	private static String FIELD_ELEMENTS 	 	= "elements";
-	private static String FIELD_LOOKUPS 		= "lookups";
-	private static String FIELD_DIVISION 		= "division";
-	private static String FIELD_HASH 			= "hash";
-	private static String FIELD_TIME 			= "time";
-	private static String FIELD_URI 			= "uri";
+	private static String FIELD_PROBABLILITY  = "probability";
+	private static String FIELD_ELEMENTS 	  = "elements";
+	private static String FIELD_LOOKUPS 	  = "lookups";
+	private static String FIELD_DIVISION 	  = "division";
+	private static String FIELD_HASH 		  = "hash";
+	private static String FIELD_TIME 		  = "time";
+	private static String FIELD_URI 		  = "uri";
 
-	private String elements = "1000";
+	private String elements    = "1000";
 	private String probability = "0.1";
 
 	private String uri		= "tmp://ic-filter/";

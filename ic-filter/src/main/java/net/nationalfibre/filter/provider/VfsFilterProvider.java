@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.VFS;
 import org.pentaho.di.core.exception.KettleFileException;
 import org.pentaho.di.core.vfs.KettleVFS;
 
@@ -30,7 +29,11 @@ public class VfsFilterProvider implements FilterProvider {
 	}
 
 	private FileObject getFile(String name) throws IOException {
-		return VFS.getManager().resolveFile(getFile() + "/" + name);
+		try {
+			return KettleVFS.getFileObject(this.getFile()  + "/" + name);
+		} catch (KettleFileException e) {
+			throw new IOException(e.getMessage(), e);
+		}
 	}
 
 	@Override

@@ -1,5 +1,8 @@
 package net.nationalfibre.pentaho.plugin.filter;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import net.nationalfibre.filter.Data;
 import net.nationalfibre.filter.DataFilter;
 import net.nationalfibre.filter.FilterConfig;
@@ -18,10 +21,10 @@ import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
 public class FilterPlugin extends BaseStep implements StepInterface {
-	
+
 	private FilterPluginData data;
 	private FilterPluginMeta meta;
-	
+
 	private DataFilter filter;
 	private Data filterData;
 
@@ -43,7 +46,7 @@ public class FilterPlugin extends BaseStep implements StepInterface {
 
 		if (r == null && filter != null) {
 
-			this.log.logDebug("Flush filters to vfs directory");
+			this.log.logDebug("Flush filters");
 
 			filter.flush();
 		}
@@ -57,13 +60,14 @@ public class FilterPlugin extends BaseStep implements StepInterface {
 		if (first) {
 			first = false;
 
-			Integer elements	 	= Integer.parseInt(meta.getElements());
-			Integer lookups  		= Integer.parseInt(meta.getLookups());
-			Integer division  		= Integer.parseInt(meta.getDivision());
-			Float probability  		= Float.parseFloat(meta.getProbability());
-			String hashFieldName 	= meta.getHash();
-			String timeFieldName 	= meta.getTime();
-			String uri  			= meta.getUri();
+			Integer elements	 = Integer.parseInt(meta.getElements());
+			Integer lookups		 = Integer.parseInt(meta.getLookups());
+			Integer division	 = Integer.parseInt(meta.getDivision());
+			Float probability	 = Float.parseFloat(meta.getProbability());
+			String hashFieldName = meta.getHash();
+			String timeFieldName = meta.getTime();
+			String uriStr		 = meta.getUri();
+			URI uri				 = null;
 
 			if (hashFieldName == null) {
 				throw new FilterException("Unable to retrieve hash field name");
@@ -73,29 +77,43 @@ public class FilterPlugin extends BaseStep implements StepInterface {
 				throw new FilterException("Unable to retrieve timestamp field name");
 			}
 
-			if (uri == null) {
+			if (uriStr == null) {
 				throw new FilterException("Unable to retrieve filter uri");
+			}
+
+			try {
+				uri = new URI(uriStr);
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e.getMessage(), e);
+			}
+
+			ProviderType type = ProviderType.VFS;
+			boolean forceVfs  = Boolean.parseBoolean(getVariable("ic.filter.enabled.provider.hdfs", "false"));
+
+			if("hdfs".equals(uri.getScheme()) && forceVfs) {
+				type = ProviderType.HDFS;
 			}
 
 			FilterConfig config = FilterConfig.create()
 				.withFalsePositiveProbability(probability)
 				.withExpectedNumberOfElements(lookups)
-				.withProvider(ProviderType.VFS)
 				.withNumberOfLookups(lookups)
 				.withTimeDivision(division)
-				.withURI(uri);
+				.withProvider(type)
+				.withURI(uriStr);
 
 			filter = FilterFactory.createFilter(config);
 
-			log.logDetailed(String.format("Filter URI (%s)", uri));
+			log.logDetailed(String.format("Filter URI (%s)", uriStr));
+			log.logDetailed(String.format("Provider (%s)", type));
 			log.logDetailed(String.format("Expected Number Of Elements (%s)", elements));
 			log.logDetailed(String.format("False Positive Probability (%s)", probability));
 			log.logDetailed(String.format("Time Div (%s)", division));
 			log.logDetailed(String.format("Number Of Lookups (%s)", lookups));
 
-			data.outputRowMeta  = (RowMetaInterface) getInputRowMeta().clone();
-			hashFieldIndex 		= data.outputRowMeta.indexOfValue(hashFieldName);
-			timeFielIndex 		= data.outputRowMeta.indexOfValue(timeFieldName);
+			data.outputRowMeta	= (RowMetaInterface) getInputRowMeta().clone();
+			hashFieldIndex		= data.outputRowMeta.indexOfValue(hashFieldName);
+			timeFielIndex		= data.outputRowMeta.indexOfValue(timeFieldName);
 
 			meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
 

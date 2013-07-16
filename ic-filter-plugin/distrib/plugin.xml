@@ -6,10 +6,16 @@
    tooltip="IC Filter Plugin"
    category="Transform"
    classname="net.nationalfibre.pentaho.plugin.filter.FilterPluginMeta">
+
    <libraries>
-        <library name="ic-filter-plugin.jar"/>
-        <library name="ic-filter.jar"/>
-        <library name="bloomfilter.jar"/>
+    <library name="ic-filter-plugin.jar"/>
+    <library name="lib/ic-filter.jar"/>
+    <library name="lib/bloomfilter.jar"/>
+    <library name="lib/commons-configuration.jar"/>
+    <library name="lib/hadoop-common.jar"/>
+    <library name="lib/hadoop-auth.jar"/>
+    <library name="lib/hadoop-hdfs.jar"/>
+    <library name="lib/hadoop-client.jar"/>
    </libraries>
 
    <localized_category>

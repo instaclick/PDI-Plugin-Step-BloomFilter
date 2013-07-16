@@ -14,13 +14,14 @@ public class BloomDataFilter implements DataFilter {
 
 	private FilterConfig config;
 	private FilterProvider filterProvider;
-
-	private Map<String, BloomFilter<String>> filters 	= new HashMap<String, BloomFilter<String>>();
-	private Set<String> dirtyFilters 					= new HashSet<String>();
+	private Set<String> dirtyFilters;
+	private Map<String, BloomFilter<String>> filters;
 
 	public BloomDataFilter(FilterConfig config, FilterProvider filterProvider) {
-		this.config				= config;
-		this.filterProvider		= filterProvider;
+		this.config         = config;
+		this.filterProvider	= filterProvider;
+		this.dirtyFilters	= new HashSet<String>();
+		this.filters        = new HashMap<String, BloomFilter<String>>();
 	}
 
 	private int getDataHashCode(Data data) {

@@ -8,6 +8,8 @@
     <name>ic-filter</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <hadoop.version>2.0.0-cdh4.1.1</hadoop.version>
+        <skipTests>false</skipTests>
     </properties>
     <dependencies>
         <dependency>
@@ -21,32 +23,61 @@
             <artifactId>java-bloomfilter</artifactId>
             <version>1.0</version>
         </dependency>
-         <dependency>
-            <groupId>org.apache.commons.vfs</groupId>
-            <artifactId>kettle-apache-vfs</artifactId>
-            <version>1.0</version>
+        <dependency>
+            <groupId>commons-vfs</groupId>
+            <artifactId>commons-vfs</artifactId>
+            <version>2.0-20090205</version>
         </dependency>
         <dependency>
-            <groupId>org.pentaho.di.core.vfs</groupId>
-            <artifactId>kettle-core-vfs</artifactId>
-            <version>1.0</version>
+            <groupId>pentaho.kettle</groupId>
+            <artifactId>kettle-core</artifactId>
+            <version>4.1.4-SNAPSHOT</version>
         </dependency>
-        <dependency>
-		    <groupId>log4j</groupId>
-		    <artifactId>log4j</artifactId>
-		    <version>1.2.17</version>
-		</dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-core</artifactId>
-            <version>0.20.2</version>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
         </dependency>
     </dependencies>
     <repositories>
         <repository>
-            <id>project.local</id>
-            <name>local-repo</name>
+            <id>repo.local</id>
+            <name>repo-local</name>
             <url>file:${project.basedir}/repo</url>
+        </repository>
+        <repository>
+            <id>repository.pentaho.org</id>
+            <name>repository.pentaho.org</name>
+            <url>http://repository.pentaho.org/artifactory/pentaho</url>
+        </repository>
+        <repository>
+            <id>thirdparty.repository.pentaho.org</id>
+            <name>thirdparty.pentaho.org</name>
+            <url>http://repository.pentaho.org/artifactory/third-party</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>cdh-build</name>
+            <url>https://repository.cloudera.com/artifactory/cdh-build</url>
+        </repository>
+        <repository>
+            <snapshots />
+            <id>snapshots</id>
+            <name>libs-snapshot</name>
+            <url>https://repository.cloudera.com/artifactory/libs-snapshot</url>
         </repository>
     </repositories>
     <build>
@@ -55,5 +86,15 @@
                 <directory>${project.basedir}/src/test/java</directory>
             </testResource>
         </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.15</version>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>

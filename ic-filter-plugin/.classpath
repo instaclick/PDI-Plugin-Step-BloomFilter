@@ -8,6 +8,6 @@
 	<classpathentry kind="lib" path="libext/kettle-dbdialog.jar"/>
 	<classpathentry kind="lib" path="libext/kettle-engine.jar"/>
 	<classpathentry kind="lib" path="libext/kettle-ui-swt.jar"/>
-	<classpathentry kind="lib" path="libext/ic-filter.jar"/>
+	<classpathentry kind="lib" path="libdeploy/ic-filter.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
