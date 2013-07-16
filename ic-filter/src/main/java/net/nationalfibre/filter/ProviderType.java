@@ -1,6 +1,7 @@
 package net.nationalfibre.filter;
 
-public enum ProviderType {
+public enum ProviderType
+{
     MEMORY,
     VFS,
     HDFS,

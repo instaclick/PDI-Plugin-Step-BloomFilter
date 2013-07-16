@@ -25,8 +25,8 @@ import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 import org.w3c.dom.Node;
 
-public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface {
-
+public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
+{
     private static String FIELD_PROBABLILITY = "probability";
     private static String FIELD_ELEMENTS     = "elements";
     private static String FIELD_LOOKUPS      = "lookups";
@@ -46,20 +46,24 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface 
         super();
     }
 
-    public StepDialogInterface getDialog(Shell shell, StepMetaInterface meta, TransMeta transMeta, String name) {
+    public StepDialogInterface getDialog(Shell shell, StepMetaInterface meta, TransMeta transMeta, String name)
+    {
         return new FilterPluginDialog(shell, meta, transMeta, name);
     }
 
-    public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta transMeta, Trans disp) {
+    public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta transMeta, Trans disp)
+    {
         return new FilterPlugin(stepMeta, stepDataInterface, cnr, transMeta, disp);
     }
 
-    public StepDataInterface getStepData() {
+    public StepDataInterface getStepData()
+    {
         return new FilterPluginData();
     }
 
     @Override
-    public void check(List<CheckResultInterface> remarks, TransMeta transmeta, StepMeta stepMeta, RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info) {
+    public void check(List<CheckResultInterface> remarks, TransMeta transmeta, StepMeta stepMeta, RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info)
+    {
 
         CheckResult prevSizeCheck = (prev == null || prev.size() == 0)
                 ? new CheckResult(CheckResult.TYPE_RESULT_WARNING, "Not receiving any fields from previous steps!", stepMeta)
@@ -85,7 +89,8 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface 
     }
 
     @Override
-    public String getXML() {
+    public String getXML()
+    {
         final StringBuilder bufer = new StringBuilder();
 
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_PROBABLILITY, getProbability()));
@@ -100,7 +105,8 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface 
     }
 
     @Override
-    public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
+    public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException
+    {
         try {
 
             setProbability(XMLHandler.getTagValue(stepnode, FIELD_PROBABLILITY));
@@ -117,7 +123,8 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface 
     }
 
     @Override
-    public void readRep(Repository rep, ObjectId idStep, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleException {
+    public void readRep(Repository rep, ObjectId idStep, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleException
+    {
         try {
 
             setProbability(rep.getStepAttributeString(idStep, FIELD_PROBABLILITY));
@@ -136,9 +143,9 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface 
     }
 
     @Override
-    public void saveRep(Repository rep, ObjectId idTransformation, ObjectId idStep) throws KettleException {
+    public void saveRep(Repository rep, ObjectId idTransformation, ObjectId idStep) throws KettleException
+    {
         try {
-
             rep.saveStepAttribute(idTransformation, idStep, FIELD_PROBABLILITY, getProbability());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_ELEMENTS, getElements());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_DIVISION, getDivision());
@@ -153,7 +160,8 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface 
     }
 
     @Override
-    public void setDefault() {
+    public void setDefault()
+    {
         this.elements    = "1000";
         this.probability = "0.1";
 
@@ -164,59 +172,73 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface 
         this.time       = "timestamp";
     }
 
-    public String getElements() {
+    public String getElements()
+    {
         return elements;
     }
 
-    public void setElements(String expectedNumberOfElements) {
+    public void setElements(String expectedNumberOfElements)
+    {
         this.elements = expectedNumberOfElements;
     }
 
-    public String getProbability() {
+    public String getProbability()
+    {
         return probability;
     }
 
-    public void setProbability(String falsePositiveProbability) {
+    public void setProbability(String falsePositiveProbability)
+    {
         this.probability = falsePositiveProbability;
     }
 
-    public String getUri() {
+    public String getUri()
+    {
         return uri;
     }
 
-    public void setUri(String uri) {
+    public void setUri(String uri)
+    {
         this.uri = uri;
     }
 
-    public String getDivision() {
+    public String getDivision()
+    {
         return division;
     }
 
-    public void setDivision(String timeDivision) {
+    public void setDivision(String timeDivision)
+    {
         this.division = timeDivision;
     }
 
-    public String getLookups() {
+    public String getLookups()
+    {
         return lookups;
     }
 
-    public void setLookups(String numberOfLookups) {
+    public void setLookups(String numberOfLookups)
+    {
         this.lookups = numberOfLookups;
     }
 
-    public String getHash() {
+    public String getHash()
+    {
         return hash;
     }
 
-    public void setHash(String hashFieldName) {
+    public void setHash(String hashFieldName)
+    {
         this.hash = hashFieldName;
     }
 
-    public String getTime() {
+    public String getTime()
+    {
         return time;
     }
 
-    public void setTime(String timeFieldName) {
+    public void setTime(String timeFieldName)
+    {
         this.time = timeFieldName;
     }
 }

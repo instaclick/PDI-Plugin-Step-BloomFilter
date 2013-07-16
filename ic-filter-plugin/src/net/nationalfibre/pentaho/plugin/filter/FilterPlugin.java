@@ -20,7 +20,8 @@ import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
-public class FilterPlugin extends BaseStep implements StepInterface {
+public class FilterPlugin extends BaseStep implements StepInterface
+{
 
     private FilterPluginData data;
     private FilterPluginMeta meta;
@@ -31,12 +32,14 @@ public class FilterPlugin extends BaseStep implements StepInterface {
     private String hashValue        = null;
     private Long timeValue          = null;
 
-    public FilterPlugin(StepMeta s, StepDataInterface stepDataInterface, int c, TransMeta t, Trans dis) {
+    public FilterPlugin(StepMeta s, StepDataInterface stepDataInterface, int c, TransMeta t, Trans dis)
+    {
         super(s, stepDataInterface, c, t, dis);
     }
 
     @Override
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
+    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
+    {
 
         meta = (FilterPluginMeta) smi;
         data = (FilterPluginData) sdi;
@@ -141,7 +144,8 @@ public class FilterPlugin extends BaseStep implements StepInterface {
     }
 
     @Override
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
+    public boolean init(StepMetaInterface smi, StepDataInterface sdi)
+    {
         meta = (FilterPluginMeta) smi;
         data = (FilterPluginData) sdi;
 
@@ -149,7 +153,8 @@ public class FilterPlugin extends BaseStep implements StepInterface {
     }
 
     @Override
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
+    public void dispose(StepMetaInterface smi, StepDataInterface sdi)
+    {
         meta = (FilterPluginMeta) smi;
         data = (FilterPluginData) sdi;
 
@@ -157,7 +162,8 @@ public class FilterPlugin extends BaseStep implements StepInterface {
     }
 
     // Run is were the action happens!
-    public void run() {
+    public void run()
+    {
         logBasic("Starting to run...");
         try {
 

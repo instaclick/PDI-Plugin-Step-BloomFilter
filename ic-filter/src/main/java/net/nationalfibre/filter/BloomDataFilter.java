@@ -10,40 +10,47 @@ import net.nationalfibre.filter.provider.FilterProvider;
 
 import com.skjegstad.utils.BloomFilter;
 
-public class BloomDataFilter implements DataFilter {
+public class BloomDataFilter implements DataFilter
+{
 
     private FilterConfig config;
     private Set<String> dirtyFilters;
     private FilterProvider filterProvider;
     private Map<String, BloomFilter<String>> filters;
 
-    public BloomDataFilter(FilterConfig config, FilterProvider filterProvider) {
+    public BloomDataFilter(FilterConfig config, FilterProvider filterProvider)
+    {
         this.config         = config;
         this.filterProvider = filterProvider;
         this.dirtyFilters   = new HashSet<String>();
         this.filters        = new HashMap<String, BloomFilter<String>>();
     }
 
-    private int getDataHashCode(Data data) {
+    private int getDataHashCode(Data data)
+    {
         double division = config.getTimeDivision();
         Long timestamp  = data.getTimestamp();
 
         return (int) Math.round((timestamp / division));
     }
 
-    private String getFilterName(Data data) {
+    private String getFilterName(Data data)
+    {
         return getFilterName(getDataHashCode(data));
     }
 
-    private String getFilterName(int dataHash) {
+    private String getFilterName(int dataHash)
+    {
         return dataHash + ".bloom";
     }
 
-    private void markAsDirty(String name) {
+    private void markAsDirty(String name)
+    {
         dirtyFilters.add(name);
     }
 
-    private boolean hasProviderFilter(int dataHash) {
+    private boolean hasProviderFilter(int dataHash)
+    {
         String name = getFilterName(dataHash);
 
         try {
@@ -57,7 +64,8 @@ public class BloomDataFilter implements DataFilter {
         return hasProviderFilter(getDataHashCode(data));
     }
 
-    private BloomFilter<String> getProviderFilter(int dataHash) {
+    private BloomFilter<String> getProviderFilter(int dataHash)
+    {
 
         String name = getFilterName(dataHash);
 
@@ -73,11 +81,13 @@ public class BloomDataFilter implements DataFilter {
         }
     }
 
-    private BloomFilter<String> getProviderFilter(Data data) {
+    private BloomFilter<String> getProviderFilter(Data data)
+    {
         return getProviderFilter(getDataHashCode(data));
     }
 
-    private BloomFilter<String> getFilter(Data data) {
+    private BloomFilter<String> getFilter(Data data)
+    {
         String name = getFilterName(data);
 
         if (filters.containsKey(name)) {
@@ -94,7 +104,8 @@ public class BloomDataFilter implements DataFilter {
         return filters.get(name);
     }
 
-    public boolean add(Data data) {
+    public boolean add(Data data)
+    {
 
         if (contains(data)) {
             return false;
@@ -109,7 +120,8 @@ public class BloomDataFilter implements DataFilter {
         return true;
     }
 
-    public void flush() {
+    public void flush()
+    {
         try {
             for (String name : dirtyFilters) {
                 filterProvider.saveFilter(name, filters.get(name));
@@ -122,7 +134,8 @@ public class BloomDataFilter implements DataFilter {
         dirtyFilters.clear();
     }
 
-    private boolean memoryContains(Data data) {
+    private boolean memoryContains(Data data)
+    {
 
         int lookups = config.getNumberOfLookups();
         int code    = getDataHashCode(data);
@@ -144,7 +157,8 @@ public class BloomDataFilter implements DataFilter {
         return false;
     }
 
-    private boolean providerContains(Data data) {
+    private boolean providerContains(Data data)
+    {
 
         int lookups = config.getNumberOfLookups();
         int code    = getDataHashCode(data);
@@ -166,7 +180,8 @@ public class BloomDataFilter implements DataFilter {
     }
 
     @Override
-    public boolean contains(Data data) {
+    public boolean contains(Data data)
+    {
 
         if (memoryContains(data)) {
             return true;

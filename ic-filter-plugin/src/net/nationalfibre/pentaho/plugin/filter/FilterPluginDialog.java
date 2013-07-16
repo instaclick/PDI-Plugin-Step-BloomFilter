@@ -23,7 +23,8 @@ import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
-public class FilterPluginDialog extends BaseStepDialog implements StepDialogInterface {
+public class FilterPluginDialog extends BaseStepDialog implements StepDialogInterface
+{
 
     private FilterPluginMeta input;
     private Label labelHash;
@@ -60,13 +61,15 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
     private FormData formUriLabel;
     private FormData formUriText;
 
-    public FilterPluginDialog(Shell parent, Object in, TransMeta transMeta, String sname) {
+    public FilterPluginDialog(Shell parent, Object in, TransMeta transMeta, String sname)
+    {
         super(parent, (BaseStepMeta) in, transMeta, sname);
 
         input = (FilterPluginMeta) in;
     }
 
-    public String open() {
+    public String open()
+    {
         Shell parent    = getParent();
         Display display = parent.getDisplay();
         shell           = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MIN | SWT.MAX);
@@ -350,7 +353,8 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
     }
 
     // Read data from input (TextFileInputInfo)
-    public void getData() {
+    public void getData()
+    {
         wStepname.selectAll();
 
         if (input.getHash() != null) {
@@ -382,14 +386,16 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         }
     }
 
-    private void cancel() {
+    private void cancel()
+    {
         stepname = null;
         input.setChanged(changed);
 
         dispose();
     }
 
-    private void ok() {
+    private void ok()
+    {
         stepname = wStepname.getText();
 
         input.setUri(textUri.getText());

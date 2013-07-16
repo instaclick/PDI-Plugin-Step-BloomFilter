@@ -12,15 +12,18 @@ import org.pentaho.di.core.vfs.KettleVFS;
 
 import com.skjegstad.utils.BloomFilter;
 
-public class VfsFilterProvider implements FilterProvider {
+public class VfsFilterProvider implements FilterProvider
+{
 
     private String dir = null;
 
-    public VfsFilterProvider(String dir) {
+    public VfsFilterProvider(String dir)
+    {
         this.dir = dir;
     }
 
-    private FileObject getFile() throws IOException {
+    private FileObject getFile() throws IOException
+    {
         try {
             return KettleVFS.getFileObject(this.dir);
         } catch (KettleFileException e) {
@@ -28,7 +31,8 @@ public class VfsFilterProvider implements FilterProvider {
         }
     }
 
-    private FileObject getFile(String name) throws IOException {
+    private FileObject getFile(String name) throws IOException
+    {
         try {
             return KettleVFS.getFileObject(this.getFile() + "/" + name);
         } catch (KettleFileException e) {
@@ -37,13 +41,15 @@ public class VfsFilterProvider implements FilterProvider {
     }
 
     @Override
-    public boolean hasFilter(String name) throws IOException {
+    public boolean hasFilter(String name) throws IOException
+    {
         return getFile(name).exists();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public BloomFilter<String> loadFilter(String name) throws IOException {
+    public BloomFilter<String> loadFilter(String name) throws IOException
+    {
 
         FileObject file                     = getFile(name);
         InputStream fileInputStream         = file.getContent().getInputStream();
@@ -62,10 +68,11 @@ public class VfsFilterProvider implements FilterProvider {
     }
 
     @Override
-    public void saveFilter(String name, BloomFilter<String> filter) throws IOException {
+    public void saveFilter(String name, BloomFilter<String> filter) throws IOException
+    {
 
-        FileObject folder   = getFile();
-        FileObject file     = getFile(name);
+        FileObject folder = getFile();
+        FileObject file   = getFile(name);
 
         if ( ! folder.exists()) {
             folder.createFolder();

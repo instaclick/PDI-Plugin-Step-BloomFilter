@@ -1,5 +1,6 @@
 package net.nationalfibre.filter;
 
-public enum FilterType {
+public enum FilterType
+{
     BLOMM,
 }

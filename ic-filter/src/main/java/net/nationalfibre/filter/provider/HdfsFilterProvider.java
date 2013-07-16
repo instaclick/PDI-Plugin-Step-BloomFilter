@@ -12,19 +12,22 @@ import org.apache.hadoop.fs.Path;
 
 import com.skjegstad.utils.BloomFilter;
 
-public class HdfsFilterProvider implements FilterProvider {
+public class HdfsFilterProvider implements FilterProvider
+{
 
     FileSystem hdfs     = null;
     String dir          = null;
     Configuration conf  = new Configuration();
 
-    public HdfsFilterProvider(String dir) {
+    public HdfsFilterProvider(String dir)
+    {
         this.dir = dir;
 
         conf.set("fs.default.name", dir);
     }
 
-    private FileSystem getHdfs() throws IOException {
+    private FileSystem getHdfs() throws IOException
+    {
 
         if (hdfs == null) {
             hdfs = FileSystem.get(conf);
@@ -33,21 +36,25 @@ public class HdfsFilterProvider implements FilterProvider {
         return hdfs;
     }
 
-    private Path getPath() {
+    private Path getPath()
+    {
         return new Path(this.dir);
     }
 
-    private Path getPath(String name) {
+    private Path getPath(String name)
+    {
         return new Path(this.getPath().toString() + "/" + name);
     }
 
     @Override
-    public boolean hasFilter(String name) throws IOException {
+    public boolean hasFilter(String name) throws IOException
+    {
         return getHdfs().exists(getPath(name));
     }
 
     @Override
-    public BloomFilter<String> loadFilter(String name) throws IOException {
+    public BloomFilter<String> loadFilter(String name) throws IOException
+    {
 
         Path file                           = getPath(name);
         InputStream fileInputStream         = getHdfs().open(file);
@@ -67,14 +74,15 @@ public class HdfsFilterProvider implements FilterProvider {
     }
 
     @Override
-    public void saveFilter(String name, BloomFilter<String> filter) throws IOException {
+    public void saveFilter(String name, BloomFilter<String> filter) throws IOException
+    {
 
-        FileSystem hdfs = getHdfs();
+        FileSystem fs   = getHdfs();
         Path folder     = getPath();
         Path file       = getPath(name);
 
-        if ( ! hdfs.exists(folder)) {
-            hdfs.mkdirs(folder);
+        if ( ! fs.exists(folder)) {
+            fs.mkdirs(folder);
         }
 
         OutputStream fileOutputStream           = hdfs.create(file, true);
