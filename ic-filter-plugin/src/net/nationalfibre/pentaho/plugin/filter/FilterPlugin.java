@@ -20,23 +20,39 @@ import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
+/**
+ * Pentaho filter plugin
+ *
+ * @author Fabio B. Silva <fabios@nationalfibre.net>
+ */
 public class FilterPlugin extends BaseStep implements StepInterface
 {
-
+    /**
+     * Filter data
+     */
     private FilterPluginData data;
-    private FilterPluginMeta meta;
-    private DataFilter filter;
-    private Data filterData;
-    private Integer hashFieldIndex  = null;
-    private Integer timeFielIndex   = null;
-    private String hashValue        = null;
-    private Long timeValue          = null;
 
-    public FilterPlugin(StepMeta s, StepDataInterface stepDataInterface, int c, TransMeta t, Trans dis)
+    /**
+     * Filter meta data
+     */
+    private FilterPluginMeta meta;
+
+    /**
+     * Data filter
+     */
+    private DataFilter filter;
+
+    /**
+     * {@inheritDoc}
+     */
+    public FilterPlugin(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta, Trans trans)
     {
-        super(s, stepDataInterface, c, t, dis);
+        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
     {
@@ -114,26 +130,26 @@ public class FilterPlugin extends BaseStep implements StepInterface
             log.logDetailed(String.format("Number Of Lookups (%s)", lookups));
 
             data.outputRowMeta  = (RowMetaInterface) getInputRowMeta().clone();
-            hashFieldIndex      = data.outputRowMeta.indexOfValue(hashFieldName);
-            timeFielIndex       = data.outputRowMeta.indexOfValue(timeFieldName);
+            data.hashFieldIndex      = data.outputRowMeta.indexOfValue(hashFieldName);
+            data.timeFielIndex       = data.outputRowMeta.indexOfValue(timeFieldName);
 
             meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
 
-            if (hashFieldIndex == null || hashFieldIndex < 0) {
+            if (data.hashFieldIndex == null || data.hashFieldIndex < 0) {
                 throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
             }
 
-            if (timeFielIndex == null || timeFielIndex < 0) {
+            if (data.timeFielIndex == null || data.timeFielIndex < 0) {
                 throw new FilterException("Unable to retrieve time field : " + timeFieldName);
             }
         }
 
-        hashValue  = String.valueOf(r[hashFieldIndex]);
-        timeValue  = Long.parseLong(String.valueOf(r[timeFielIndex]));
-        filterData = new Data(hashValue, timeValue);
+        data.hashValue  = String.valueOf(r[data.hashFieldIndex]);
+        data.timeValue  = Long.parseLong(String.valueOf(r[data.timeFielIndex]));
+        data.filterData = new Data(data.hashValue, data.timeValue);
 
-        if ( ! filter.add(filterData)) {
-            log.logDebug(getLinesRead() + " - Ignore row : " + filterData.getHash());
+        if ( ! filter.add(data.filterData)) {
+            log.logDebug(getLinesRead() + " - Ignore row : " + data.filterData.getHash());
 
             return true;
         }
@@ -143,6 +159,9 @@ public class FilterPlugin extends BaseStep implements StepInterface
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean init(StepMetaInterface smi, StepDataInterface sdi)
     {
@@ -152,6 +171,9 @@ public class FilterPlugin extends BaseStep implements StepInterface
         return super.init(smi, sdi);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void dispose(StepMetaInterface smi, StepDataInterface sdi)
     {
@@ -161,7 +183,9 @@ public class FilterPlugin extends BaseStep implements StepInterface
         super.dispose(smi, sdi);
     }
 
-    // Run is were the action happens!
+    /**
+     * {@inheritDoc}
+     */
     public void run()
     {
         logBasic("Starting to run...");

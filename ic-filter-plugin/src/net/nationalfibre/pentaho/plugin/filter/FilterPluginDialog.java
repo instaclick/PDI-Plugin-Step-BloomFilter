@@ -23,6 +23,11 @@ import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
+/**
+ * Pentaho filter plugin dialog
+ *
+ * @author Fabio B. Silva <fabios@nationalfibre.net>
+ */
 public class FilterPluginDialog extends BaseStepDialog implements StepDialogInterface
 {
 

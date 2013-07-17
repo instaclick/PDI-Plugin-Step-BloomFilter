@@ -25,6 +25,11 @@ import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 import org.w3c.dom.Node;
 
+/**
+ * Pentaho filter plugin meta
+ *
+ * @author Fabio B. Silva <fabios@nationalfibre.net>
+ */
 public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
 {
     private static String FIELD_PROBABLILITY = "probability";
@@ -46,41 +51,53 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         super();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public StepDialogInterface getDialog(Shell shell, StepMetaInterface meta, TransMeta transMeta, String name)
     {
         return new FilterPluginDialog(shell, meta, transMeta, name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta transMeta, Trans disp)
     {
         return new FilterPlugin(stepMeta, stepDataInterface, cnr, transMeta, disp);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public StepDataInterface getStepData()
     {
         return new FilterPluginData();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void check(List<CheckResultInterface> remarks, TransMeta transmeta, StepMeta stepMeta, RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info)
     {
 
         CheckResult prevSizeCheck = (prev == null || prev.size() == 0)
-                ? new CheckResult(CheckResult.TYPE_RESULT_WARNING, "Not receiving any fields from previous steps!", stepMeta)
-                : new CheckResult(CheckResult.TYPE_RESULT_OK, "Step is connected to previous one, receiving " + prev.size() + " fields", stepMeta);
+            ? new CheckResult(CheckResult.TYPE_RESULT_WARNING, "Not receiving any fields from previous steps!", stepMeta)
+            : new CheckResult(CheckResult.TYPE_RESULT_OK, "Step is connected to previous one, receiving " + prev.size() + " fields", stepMeta);
 
         /// See if we have input streams leading to this step!
         CheckResult inputLengthCheck = (input.length > 0)
-                ? new CheckResult(CheckResult.TYPE_RESULT_OK, "Step is receiving info from other steps.", stepMeta)
-                : new CheckResult(CheckResult.TYPE_RESULT_ERROR, "No input received from other steps!", stepMeta);
+            ? new CheckResult(CheckResult.TYPE_RESULT_OK, "Step is receiving info from other steps.", stepMeta)
+            : new CheckResult(CheckResult.TYPE_RESULT_ERROR, "No input received from other steps!", stepMeta);
 
         CheckResult hashFieldCheck = ((prev == null) || (prev.indexOfValue(getHash()) < 0))
-                ? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Hash field not found.", stepMeta)
-                : new CheckResult(CheckResult.TYPE_RESULT_OK, "Hash field found.", stepMeta);
+            ? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Hash field not found.", stepMeta)
+            : new CheckResult(CheckResult.TYPE_RESULT_OK, "Hash field found.", stepMeta);
 
         CheckResult timeFieldCheck = ((prev == null) || (prev.indexOfValue(getTime()) < 0))
-                ? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Timestamp field not found.", stepMeta)
-                : new CheckResult(CheckResult.TYPE_RESULT_OK, "Timestamp field found.", stepMeta);
+            ? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Timestamp field not found.", stepMeta)
+            : new CheckResult(CheckResult.TYPE_RESULT_OK, "Timestamp field found.", stepMeta);
 
         remarks.add(prevSizeCheck);
         remarks.add(inputLengthCheck);
@@ -88,6 +105,9 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         remarks.add(timeFieldCheck);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getXML()
     {
@@ -104,6 +124,9 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         return bufer.toString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException
     {
@@ -122,6 +145,9 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void readRep(Repository rep, ObjectId idStep, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleException
     {
@@ -142,6 +168,9 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void saveRep(Repository rep, ObjectId idTransformation, ObjectId idStep) throws KettleException
     {
@@ -159,6 +188,9 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setDefault()
     {
