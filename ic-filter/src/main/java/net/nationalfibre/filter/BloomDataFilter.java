@@ -16,14 +16,16 @@ public class BloomDataFilter implements DataFilter
     private FilterConfig config;
     private Set<String> dirtyFilters;
     private FilterProvider filterProvider;
+    private Map<Integer, Boolean> containsFilters;
     private Map<String, BloomFilter<String>> filters;
-
+    
     public BloomDataFilter(FilterConfig config, FilterProvider filterProvider)
     {
-        this.config         = config;
-        this.filterProvider = filterProvider;
-        this.dirtyFilters   = new HashSet<String>();
-        this.filters        = new HashMap<String, BloomFilter<String>>();
+        this.config          = config;
+        this.filterProvider  = filterProvider;
+        this.dirtyFilters    = new HashSet<String>();
+        this.containsFilters = new HashMap<Integer, Boolean>();
+        this.filters         = new HashMap<String, BloomFilter<String>>();
     }
 
     private int getDataHashCode(Data data)
@@ -51,10 +53,19 @@ public class BloomDataFilter implements DataFilter
 
     private boolean hasProviderFilter(int dataHash)
     {
+        if (containsFilters.containsKey(dataHash)) {
+            return containsFilters.get(dataHash);
+        }
+
         String name = getFilterName(dataHash);
 
         try {
-            return filterProvider.hasFilter(name);
+            Boolean contains = filterProvider.hasFilter(name);
+
+            containsFilters.put(dataHash, contains);
+
+            return contains;
+
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -66,7 +77,6 @@ public class BloomDataFilter implements DataFilter
 
     private BloomFilter<String> getProviderFilter(int dataHash)
     {
-
         String name = getFilterName(dataHash);
 
         try {
@@ -132,6 +142,7 @@ public class BloomDataFilter implements DataFilter
 
         filters.clear();
         dirtyFilters.clear();
+        containsFilters.clear();
     }
 
     private boolean memoryContains(Data data)

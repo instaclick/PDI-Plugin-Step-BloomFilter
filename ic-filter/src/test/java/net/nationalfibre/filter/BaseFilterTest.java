@@ -4,7 +4,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import junit.framework.Assert;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -19,14 +20,14 @@ public abstract class BaseFilterTest {
         Data d1             = new Data("1", df.parse("2001-11-12 11:22:31"));
         Data d2             = new Data("1", df.parse("2001-11-12 11:22:32"));
 
-        Assert.assertFalse(filter.contains(d1));
-        Assert.assertFalse(filter.contains(d2));
+        assertFalse(filter.contains(d1));
+        assertFalse(filter.contains(d2));
 
-        Assert.assertTrue(filter.add(d1));
-        Assert.assertFalse(filter.add(d2));
+        assertTrue(filter.add(d1));
+        assertFalse(filter.add(d2));
 
-        Assert.assertTrue(filter.contains(d1));
-        Assert.assertTrue(filter.contains(d2));
+        assertTrue(filter.contains(d1));
+        assertTrue(filter.contains(d2));
     }
 
     @Test
@@ -36,15 +37,15 @@ public abstract class BaseFilterTest {
         Data d1             = new Data("1", df.parse("2001-11-12 11:22:31"));
         Data d2             = new Data("1", df.parse("2001-11-12 11:22:32"));
 
-        Assert.assertFalse(filter.contains(d1));
-        Assert.assertFalse(filter.contains(d2));
+        assertFalse(filter.contains(d1));
+        assertFalse(filter.contains(d2));
 
-        Assert.assertTrue(filter.add(d1));
+        assertTrue(filter.add(d1));
 
         filter.flush();
 
-        Assert.assertTrue(filter.contains(d1));
-        Assert.assertTrue(filter.contains(d2));
+        assertTrue(filter.contains(d1));
+        assertTrue(filter.contains(d2));
     }
 
     @Test
@@ -56,23 +57,23 @@ public abstract class BaseFilterTest {
         Data d3             = new Data("1", df.parse("2001-11-12 11:22:33"));
         Data d4             = new Data("1", df.parse("2001-11-12 11:22:34"));
 
-        Assert.assertFalse(filter.contains(d1));
-        Assert.assertFalse(filter.contains(d2));
-        Assert.assertFalse(filter.contains(d3));
-        Assert.assertFalse(filter.contains(d4));
+        assertFalse(filter.contains(d1));
+        assertFalse(filter.contains(d2));
+        assertFalse(filter.contains(d3));
+        assertFalse(filter.contains(d4));
 
-        Assert.assertTrue(filter.add(d1));
-        Assert.assertFalse(filter.add(d2));
+        assertTrue(filter.add(d1));
+        assertFalse(filter.add(d2));
 
         filter.flush();
 
-        Assert.assertFalse(filter.add(d3));
-        Assert.assertFalse(filter.add(d4));
+        assertFalse(filter.add(d3));
+        assertFalse(filter.add(d4));
 
-        Assert.assertTrue(filter.contains(d1));
-        Assert.assertTrue(filter.contains(d2));
-        Assert.assertTrue(filter.contains(d3));
-        Assert.assertTrue(filter.contains(d4));
+        assertTrue(filter.contains(d1));
+        assertTrue(filter.contains(d2));
+        assertTrue(filter.contains(d3));
+        assertTrue(filter.contains(d4));
     }
 
     @Test
@@ -84,23 +85,23 @@ public abstract class BaseFilterTest {
         Data d3             = new Data("1", df.parse("2001-11-12 00:59:00"));
         Data d4             = new Data("1", df.parse("2001-11-12 12:02:00"));
 
-        Assert.assertFalse(filter.contains(d1));
-        Assert.assertFalse(filter.contains(d2));
-        Assert.assertFalse(filter.contains(d3));
-        Assert.assertFalse(filter.contains(d4));
+        assertFalse(filter.contains(d1));
+        assertFalse(filter.contains(d2));
+        assertFalse(filter.contains(d3));
+        assertFalse(filter.contains(d4));
 
-        Assert.assertTrue(filter.add(d1));
-        Assert.assertFalse(filter.add(d2));
+        assertTrue(filter.add(d1));
+        assertFalse(filter.add(d2));
 
         filter.flush();
 
-        Assert.assertFalse(filter.add(d3));
-        Assert.assertFalse(filter.add(d4));
+        assertFalse(filter.add(d3));
+        assertFalse(filter.add(d4));
 
-        Assert.assertTrue(filter.contains(d1));
-        Assert.assertTrue(filter.contains(d2));
-        Assert.assertTrue(filter.contains(d3));
-        Assert.assertTrue(filter.contains(d4));
+        assertTrue(filter.contains(d1));
+        assertTrue(filter.contains(d2));
+        assertTrue(filter.contains(d3));
+        assertTrue(filter.contains(d4));
     }
 
     @Test
@@ -110,12 +111,12 @@ public abstract class BaseFilterTest {
         Long finalTime      = startTime + 60;
         Data data           = new Data("1", startTime);
 
-        Assert.assertFalse(filter.contains(data));
-        Assert.assertTrue(filter.add(data));
-        Assert.assertTrue(filter.contains(data));
+        assertFalse(filter.contains(data));
+        assertTrue(filter.add(data));
+        assertTrue(filter.contains(data));
 
         while (startTime < finalTime) {
-            Assert.assertFalse(filter.add(new Data("1", startTime++)));
+            assertFalse(filter.add(new Data("1", startTime++)));
         }
     }
 }
