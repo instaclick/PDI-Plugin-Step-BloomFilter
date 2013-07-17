@@ -6,23 +6,37 @@ import java.util.Map;
 
 import com.skjegstad.utils.BloomFilter;
 
+/**
+ * In memory provider, valid only for test proposes
+ *
+ * @author Fabio B. Silva <fabios@nationalfibre.net>
+ */
 public class InMemoryFilterProvider implements FilterProvider
 {
+    /**
+     * Map of {@link BloomFilter}
+     */
     private Map<String, BloomFilter<String>> map = new HashMap<String, BloomFilter<String>>();
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public boolean hasFilter(String name) throws IOException
     {
         return map.containsKey(name);
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public BloomFilter<String> loadFilter(String name) throws IOException
     {
         return map.get(name);
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public void saveFilter(String name, BloomFilter<String> filter) throws IOException
     {
         map.put(name, filter);

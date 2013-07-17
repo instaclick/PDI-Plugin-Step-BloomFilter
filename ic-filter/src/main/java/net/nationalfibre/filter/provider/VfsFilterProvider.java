@@ -12,25 +12,49 @@ import org.pentaho.di.core.vfs.KettleVFS;
 
 import com.skjegstad.utils.BloomFilter;
 
+/**
+ * KettleVFS provider
+ *
+ * @author Fabio B. Silva <fabios@nationalfibre.net>
+ */
 public class VfsFilterProvider implements FilterProvider
 {
+    /**
+     * Base URI
+     */
+    private String uri = null;
 
-    private String dir = null;
-
-    public VfsFilterProvider(String dir)
+    /**
+     * Base URI
+     * 
+     * @param uri
+     */
+    public VfsFilterProvider(String uri)
     {
-        this.dir = dir;
+        this.uri = uri;
     }
 
+    /**
+     * Gets the base {@link FileObject} directory
+     *
+     * @return
+     * @throws IOException
+     */
     private FileObject getFile() throws IOException
     {
         try {
-            return KettleVFS.getFileObject(this.dir);
+            return KettleVFS.getFileObject(this.uri);
         } catch (KettleFileException e) {
             throw new IOException(e.getMessage(), e);
         }
     }
 
+    /**
+     * Gets the file {@link FileObject}
+     *
+     * @return
+     * @throws IOException
+     */
     private FileObject getFile(String name) throws IOException
     {
         try {
@@ -40,17 +64,19 @@ public class VfsFilterProvider implements FilterProvider
         }
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public boolean hasFilter(String name) throws IOException
     {
         return getFile(name).exists();
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
+    /**
+     * {@inheritDoc}
+     */
     public BloomFilter<String> loadFilter(String name) throws IOException
     {
-
         FileObject file                     = getFile(name);
         InputStream fileInputStream         = file.getContent().getInputStream();
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
@@ -67,10 +93,11 @@ public class VfsFilterProvider implements FilterProvider
         }
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public void saveFilter(String name, BloomFilter<String> filter) throws IOException
     {
-
         FileObject folder = getFile();
         FileObject file   = getFile(name);
 

@@ -10,15 +10,42 @@ import net.nationalfibre.filter.provider.FilterProvider;
 
 import com.skjegstad.utils.BloomFilter;
 
+/**
+ * Bloom filter based on {@link com.skjegstad.utils.BloomFilter}
+ *
+ * @author Fabio B. Silva <fabios@nationalfibre.net>
+ */
 public class BloomDataFilter implements DataFilter
 {
-
+    /**
+     * Filter configuration
+     */
     private FilterConfig config;
+
+    /**
+     * Set of filters that should be flushed
+     */
     private Set<String> dirtyFilters;
+
+    /**
+     * Filter provider responsible for save and retrieve filter
+     */
     private FilterProvider filterProvider;
+
+    /**
+     * Map that caches providers lookups
+     */
     private Map<Integer, Boolean> containsFilters;
+
+    /**
+     * Map of {@link com.skjegstad.utils.BloomFilter}
+     */
     private Map<String, BloomFilter<String>> filters;
-    
+
+    /**
+     * @param config            Filter configuration
+     * @param filterProvider    Filter provider
+     */
     public BloomDataFilter(FilterConfig config, FilterProvider filterProvider)
     {
         this.config          = config;
@@ -28,6 +55,13 @@ public class BloomDataFilter implements DataFilter
         this.filters         = new HashMap<String, BloomFilter<String>>();
     }
 
+    /**
+     * Creates an integer hash for the given {@link Data}
+     *
+     * @param data
+     * 
+     * @return
+     */
     private int getDataHashCode(Data data)
     {
         double division = config.getTimeDivision();
@@ -36,21 +70,45 @@ public class BloomDataFilter implements DataFilter
         return (int) Math.round((timestamp / division));
     }
 
+    /**
+     * Creates a filter name base on the given {@link Data}
+     *
+     * @param data
+     * @return
+     */
     private String getFilterName(Data data)
     {
         return getFilterName(getDataHashCode(data));
     }
 
+    /**
+     * Creates a filter name base on a integer hash obtained from {@link getDataHashCode}
+     *
+     * @param data
+     * @return
+     */
     private String getFilterName(int dataHash)
     {
         return dataHash + ".bloom";
     }
 
+    /**
+     * Mark an filter as dirty, it will be flushed !
+     *
+     * @param data
+     * @return
+     */
     private void markAsDirty(String name)
     {
         dirtyFilters.add(name);
     }
 
+    /**
+     * Check if the provider contains the given data hash obtained from {@link getDataHashCode}
+     *
+     * @param dataHash
+     * @return
+     */
     private boolean hasProviderFilter(int dataHash)
     {
         if (containsFilters.containsKey(dataHash)) {
@@ -71,11 +129,24 @@ public class BloomDataFilter implements DataFilter
         }
     }
 
-    private boolean hasProviderFilter(Data data) {
+    /**
+     * Check if the provider contains the given {@link Data}
+     *
+     * @param dataHash
+     * @return
+     */
+    private boolean hasProviderFilter(Data data)
+    {
         return hasProviderFilter(getDataHashCode(data));
     }
 
-    private BloomFilter<String> getProviderFilter(int dataHash)
+    /**
+     * Retrieve an {@link BloomFilter} base on a data hash obtained from {@link getDataHashCode}
+     *
+     * @param dataHash
+     * @return
+     */
+    private BloomFilter<String> loadFilter(int dataHash)
     {
         String name = getFilterName(dataHash);
 
@@ -91,12 +162,24 @@ public class BloomDataFilter implements DataFilter
         }
     }
 
-    private BloomFilter<String> getProviderFilter(Data data)
+    /**
+     * Retrieve an {@link BloomFilter} for the given {@link Data}
+     *
+     * @param data
+     * @return
+     */
+    private BloomFilter<String> loadFilter(Data data)
     {
-        return getProviderFilter(getDataHashCode(data));
+        return loadFilter(getDataHashCode(data));
     }
 
-    private BloomFilter<String> getFilter(Data data)
+    /**
+     * Retrieve or create an {@link BloomFilter} for the given {@link Data}
+     *
+     * @param data
+     * @return
+     */
+    private BloomFilter<String> loadOrCreateFilter(Data data)
     {
         String name = getFilterName(data);
 
@@ -105,7 +188,7 @@ public class BloomDataFilter implements DataFilter
         }
 
         if (hasProviderFilter(data)) {
-            return getProviderFilter(data);
+            return loadFilter(data);
         }
 
         filters.put(name, new BloomFilter<String>(config.getFalsePositiveProbability(), config.getExpectedNumberOfElements()));
@@ -114,40 +197,14 @@ public class BloomDataFilter implements DataFilter
         return filters.get(name);
     }
 
-    public boolean add(Data data)
-    {
-
-        if (contains(data)) {
-            return false;
-        }
-
-        BloomFilter<String> filter = getFilter(data);
-        String hash = data.getHash();
-
-        filter.add(hash);
-        markAsDirty(getFilterName(data));
-
-        return true;
-    }
-
-    public void flush()
-    {
-        try {
-            for (String name : dirtyFilters) {
-                filterProvider.saveFilter(name, filters.get(name));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-
-        filters.clear();
-        dirtyFilters.clear();
-        containsFilters.clear();
-    }
-
+    /**
+     * Lookup into the loaded filter for the given {@link Data}
+     *
+     * @param data
+     * @return
+     */
     private boolean memoryContains(Data data)
     {
-
         int lookups = config.getNumberOfLookups();
         int code    = getDataHashCode(data);
         String hash = data.getHash();
@@ -168,9 +225,14 @@ public class BloomDataFilter implements DataFilter
         return false;
     }
 
+    /**
+     * Lookup into the {@link FilterProvider} for the given {@link Data}
+     * 
+     * @param data
+     * @return
+     */
     private boolean providerContains(Data data)
     {
-
         int lookups = config.getNumberOfLookups();
         int code    = getDataHashCode(data);
         String hash = data.getHash();
@@ -182,7 +244,7 @@ public class BloomDataFilter implements DataFilter
                 continue;
             }
 
-            if (getProviderFilter(current).contains(hash)) {
+            if (loadFilter(current).contains(hash)) {
                 return true;
             }
         }
@@ -190,7 +252,46 @@ public class BloomDataFilter implements DataFilter
         return false;
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
+    public boolean add(Data data)
+    {
+        if (contains(data)) {
+            return false;
+        }
+
+        BloomFilter<String> filter = loadOrCreateFilter(data);
+        String hash = data.getHash();
+
+        filter.add(hash);
+        markAsDirty(getFilterName(data));
+
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void flush()
+    {
+        try {
+            for (String name : dirtyFilters) {
+                filterProvider.saveFilter(name, filters.get(name));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        filters.clear();
+        dirtyFilters.clear();
+        containsFilters.clear();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(Data data)
     {
 

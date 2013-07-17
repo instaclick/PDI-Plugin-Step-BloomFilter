@@ -5,12 +5,21 @@ import net.nationalfibre.filter.provider.HdfsFilterProvider;
 import net.nationalfibre.filter.provider.InMemoryFilterProvider;
 import net.nationalfibre.filter.provider.VfsFilterProvider;
 
+/**
+ * Factory for {@link DataFilter}
+ *
+ * @author Fabio B. Silva <fabios@nationalfibre.net>
+ */
 public class FilterFactory
 {
-
+    /**
+     * Creates a new {@link FilterProvider} based on the given {@link FilterConfig}
+     *
+     * @param config
+     * @return
+     */
     private static FilterProvider createProvider(FilterConfig config)
     {
-
         if (config.getProvider() == ProviderType.HDFS) {
             return new HdfsFilterProvider(config.getURI());
         }
@@ -26,9 +35,14 @@ public class FilterFactory
         throw new RuntimeException("Invalid provider : " + config.getProvider());
     }
 
+    /**
+     * Creates a new {@link DataFilter} based on the given {@link FilterConfig}
+     *
+     * @param config
+     * @return
+     */
     public static DataFilter createFilter(FilterConfig config)
     {
-
         if (config.getFilter() == FilterType.BLOMM) {
             return new BloomDataFilter(config, createProvider(config));
         }

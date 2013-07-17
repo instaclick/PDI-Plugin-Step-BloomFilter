@@ -12,13 +12,31 @@ import org.apache.hadoop.fs.Path;
 
 import com.skjegstad.utils.BloomFilter;
 
+/**
+ * Hadoop HDFS provider
+ *
+ * @author Fabio B. Silva <fabios@nationalfibre.net>
+ */
 public class HdfsFilterProvider implements FilterProvider
 {
+    /**
+     * Hadoop file system
+     */
+    private FileSystem hdfs = null;
 
-    FileSystem hdfs     = null;
-    String dir          = null;
-    Configuration conf  = new Configuration();
+    /**
+     * Base directory
+     */
+    private String dir = null;
 
+    /**
+     * Hadoop configuration
+     */
+    private Configuration conf = new Configuration();
+
+    /**
+     * @param dir Base directory
+     */
     public HdfsFilterProvider(String dir)
     {
         this.dir = dir;
@@ -26,9 +44,14 @@ public class HdfsFilterProvider implements FilterProvider
         conf.set("fs.default.name", dir);
     }
 
+    /**
+     * Retrieve the base {@link FileSystem}
+     *
+     * @return
+     * @throws IOException
+     */
     private FileSystem getHdfs() throws IOException
     {
-
         if (hdfs == null) {
             hdfs = FileSystem.get(conf);
         }
@@ -36,26 +59,39 @@ public class HdfsFilterProvider implements FilterProvider
         return hdfs;
     }
 
+    /**
+     * Retrieve the base {@link Path}
+     * 
+     * @return
+     */
     private Path getPath()
     {
         return new Path(this.dir);
     }
 
+    /**
+     * Retrieve the file {@link Path}
+     *
+     * @return
+     */
     private Path getPath(String name)
     {
         return new Path(this.getPath().toString() + "/" + name);
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public boolean hasFilter(String name) throws IOException
     {
         return getHdfs().exists(getPath(name));
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public BloomFilter<String> loadFilter(String name) throws IOException
     {
-
         Path file                           = getPath(name);
         InputStream fileInputStream         = getHdfs().open(file);
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
@@ -73,10 +109,11 @@ public class HdfsFilterProvider implements FilterProvider
         }
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public void saveFilter(String name, BloomFilter<String> filter) throws IOException
     {
-
         FileSystem fs   = getHdfs();
         Path folder     = getPath();
         Path file       = getPath(name);
