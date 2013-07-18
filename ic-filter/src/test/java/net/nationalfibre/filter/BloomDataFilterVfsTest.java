@@ -9,21 +9,24 @@ import org.apache.commons.vfs.VFS;
 import org.junit.Before;
 import org.pentaho.di.core.exception.KettleFileException;
 
-public class BloomDataFilterVfsTest extends BaseFilterTest {
+public class BloomDataFilterVfsTest extends BaseFilterTest
+{
 
     DataFilter filter;
     FilterProvider provider = null;
-    FileObject folder       = null;
-    FilterConfig config     = new FilterConfig();
+    FileObject folder = null;
+    FilterConfig config = new FilterConfig();
 
-    public BloomDataFilterVfsTest() throws FileSystemException, KettleFileException {
-        folder      = VFS.getManager().resolveFile("ram://ic-filter/" + getClass().getSimpleName() + System.currentTimeMillis());
-        provider    = new VfsFilterProvider(folder.getURL().toString());
-        filter      = new BloomDataFilter(config, provider);
+    public BloomDataFilterVfsTest() throws FileSystemException, KettleFileException
+    {
+        folder   = VFS.getManager().resolveFile(getParameter("provider.uri.vfs", "ram://ic-filter/") + System.currentTimeMillis());
+        provider = new VfsFilterProvider(folder.getURL().toString());
+        filter   = new BloomDataFilter(config, provider);
     }
 
     @Before
-    public void setUp() throws FileSystemException {
+    public void setUp() throws FileSystemException
+    {
         if (folder != null && folder.exists()) {
             for (FileObject file : folder.getChildren()) {
                 file.delete();
@@ -32,7 +35,8 @@ public class BloomDataFilterVfsTest extends BaseFilterTest {
     }
 
     @Override
-    protected DataFilter getFilter() {
+    protected DataFilter getFilter()
+    {
         return filter;
     }
 }

@@ -56,7 +56,6 @@ public class FilterPlugin extends BaseStep implements StepInterface
     @Override
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
     {
-
         meta = (FilterPluginMeta) smi;
         data = (FilterPluginData) sdi;
 
@@ -121,9 +120,9 @@ public class FilterPlugin extends BaseStep implements StepInterface
             log.logDetailed(String.format("Time Div (%s)", division));
             log.logDetailed(String.format("Number Of Lookups (%s)", lookups));
 
-            data.outputRowMeta  = (RowMetaInterface) getInputRowMeta().clone();
-            data.hashFieldIndex      = data.outputRowMeta.indexOfValue(hashFieldName);
-            data.timeFielIndex       = data.outputRowMeta.indexOfValue(timeFieldName);
+            data.outputRowMeta  = (RowMetaInterface) getInputRowMeta();
+            data.hashFieldIndex = data.outputRowMeta.indexOfValue(hashFieldName);
+            data.timeFielIndex  = data.outputRowMeta.indexOfValue(timeFieldName);
 
             meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
 

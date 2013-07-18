@@ -15,11 +15,3 @@ The build scripts will download Ivy if you do not already have it installed.
     $ ant
 
 This will produce a plugin in ic-filter-plugin/deploydir This archive can then be extracted into your Pentaho Data Integration plugin directory.
-
-Further Reading
----------------
-Additional documentation is available on the Community wiki: [Big Data Plugin for Java Developers](http://wiki.pentaho.com/display/BAD/Getting+Started+for+Java+Developers)
-
-License
--------
-Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.

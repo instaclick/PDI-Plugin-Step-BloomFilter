@@ -11,7 +11,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.Before;
 
-public class BloomDataFilterHdfsTest extends BaseFilterTest {
+public class BloomDataFilterHdfsTest extends BaseFilterTest
+{
 
     DataFilter filter;
     FilterProvider provider = null;
@@ -20,8 +21,9 @@ public class BloomDataFilterHdfsTest extends BaseFilterTest {
     FilterConfig config     = new FilterConfig();
     Configuration hdfsConf  = new Configuration();
 
-    public BloomDataFilterHdfsTest() throws IOException {
-        folder = "hdfs://bi-hadoopnamednode01.ss:8020/dev-bloomfilters/" + getClass().getSimpleName();
+    public BloomDataFilterHdfsTest() throws IOException
+    {
+        folder = getParameter("provider.uri.hdfs", "hdfs://bi-hadoopnamednode01.ss:8020/dev-bloomfilters");
 
         hdfsConf.set("fs.default.name", folder);
 
@@ -32,7 +34,8 @@ public class BloomDataFilterHdfsTest extends BaseFilterTest {
 
     @Before
     @SuppressWarnings("deprecation")
-    public void setUp() throws IOException {
+    public void setUp() throws IOException
+    {
 
         if (hdfs == null || ! hdfs.exists(new Path(folder))) {
             return;
@@ -44,7 +47,8 @@ public class BloomDataFilterHdfsTest extends BaseFilterTest {
     }
 
     @Override
-    protected DataFilter getFilter() {
+    protected DataFilter getFilter()
+    {
         return filter;
     }
 }

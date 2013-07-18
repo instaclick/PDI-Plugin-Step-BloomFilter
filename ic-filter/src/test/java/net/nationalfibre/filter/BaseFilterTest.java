@@ -1,8 +1,11 @@
 package net.nationalfibre.filter;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Properties;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -11,10 +14,33 @@ import org.junit.Test;
 
 public abstract class BaseFilterTest {
 
+    private Properties properties = null;
+
     protected abstract DataFilter getFilter();
 
+    protected String getParameter(String key, String value)
+    {
+        if (properties != null) {
+            return properties.getProperty(key, value);
+        }
+
+        try {
+            properties      = new Properties();
+            InputStream in  = getClass().getResourceAsStream("/test.properties");
+
+            properties.load(in);
+            in.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        return properties.getProperty(key, value);
+    }
+
     @Test
-    public void testAddAndContains() throws ParseException {
+    public void testAddAndContains() throws ParseException
+    {
         DataFilter filter   = getFilter();
         DateFormat df       = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Data d1             = new Data("1", df.parse("2001-11-12 11:22:31"));
@@ -31,7 +57,8 @@ public abstract class BaseFilterTest {
     }
 
     @Test
-    public void testContainsAfterFlush() throws ParseException {
+    public void testContainsAfterFlush() throws ParseException
+    {
         DataFilter filter   = getFilter();
         DateFormat df       = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Data d1             = new Data("1", df.parse("2001-11-12 11:22:31"));
@@ -49,7 +76,8 @@ public abstract class BaseFilterTest {
     }
 
     @Test
-    public void testAddAfterFlush() throws ParseException {
+    public void testAddAfterFlush() throws ParseException
+    {
         DataFilter filter   = getFilter();
         DateFormat df       = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Data d1             = new Data("1", df.parse("2001-11-12 11:22:33"));
@@ -77,7 +105,8 @@ public abstract class BaseFilterTest {
     }
 
     @Test
-    public void testProviderLookup() throws ParseException {
+    public void testProviderLookup() throws ParseException
+    {
         DataFilter filter   = getFilter();
         DateFormat df       = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Data d1             = new Data("1", df.parse("2001-11-12 00:00:00"));
@@ -105,7 +134,8 @@ public abstract class BaseFilterTest {
     }
 
     @Test
-    public void testShoudNotAddDuringTheSameHour() {
+    public void testShoudNotAddDuringTheSameHour()
+    {
         DataFilter filter   = getFilter();
         Long startTime      = 1293861600L;
         Long finalTime      = startTime + 60;
