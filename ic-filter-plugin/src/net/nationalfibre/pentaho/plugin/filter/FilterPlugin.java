@@ -62,16 +62,8 @@ public class FilterPlugin extends BaseStep implements StepInterface
 
         Object[] r = getRow(); // get row, blocks when needed! no more input to be expected...
 
-        if (r == null && filter != null) {
-
-            this.log.logDebug("Flush filters");
-
-            filter.flush();
-        }
-
         if (r == null) {
             setOutputDone();
-
             return false;
         }
 
@@ -157,6 +149,21 @@ public class FilterPlugin extends BaseStep implements StepInterface
         putRow(data.outputRowMeta, r);
 
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setOutputDone()
+    {
+    	if (filter != null) {
+            log.logDebug("Flush filters");
+            filter.flush();
+        }
+
+        log.logDebug("Output done");
+        super.setOutputDone();
     }
 
     /**
