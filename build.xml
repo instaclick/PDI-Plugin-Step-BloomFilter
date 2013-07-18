@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="IC Filter Plugin" default="default" basedir=".">
+    <target name="deploy">
+        <exec dir="ic-filter" executable="mvn">
+            <arg value="install" />
+            <arg value="-DskipTests=true" />
+        </exec>
+        <exec dir="ic-filter-plugin" executable="ant" />
+    </target>
+
+    <target name="default" depends="deploy">
+        <input message="Deploy PDI Plugin ?" validargs="y,n" addproperty="do.install" />
+        <condition property="do.abort">
+            <equals arg1="n" arg2="${do.install}" />
+        </condition>
+        <fail if="do.abort">Plugin Deploy aborted.</fail>
+        
+        <exec dir="ic-filter-plugin" executable="ant">
+            <arg value="install" />
+        </exec>
+    </target>
+</project>

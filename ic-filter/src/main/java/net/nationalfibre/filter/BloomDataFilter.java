@@ -288,7 +288,6 @@ public class BloomDataFilter implements DataFilter
         containsFilters.clear();
     }
 
-
     /**
      * {@inheritDoc}
      */

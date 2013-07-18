@@ -1,3 +1,9 @@
 ic-filter/target/
 ic-filter-plugin/deploydir/
-/ic-filter-plugin/nbproject/private/
+ic-filter-plugin/nbproject/
+ic-filter-plugin/lib/
+ic-filter-plugin/test-lib/
+ic-filter-plugin/dev-lib/
+ic-filter-plugin/deploydir/
+ic-filter-plugin/dist/
+ic-filter-plugin/bin/

@@ -1,112 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="First Plugin" default="default" basedir=".">
-    <description>First Plugin build file</description>
+<project name="IC Filter Plugin" default="default" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+    
+    <description>IC Filter Plugin Build</description>
     <tstamp prefix="start" />
+
+    <import file="build-res/subfloor.xml"/>
+    
     <!-- system properties to use -->
     <property name="cr" value="${line.separator}" />
+
+    <!-- build properties -->
+    <property file="build.properties"/>
+
     <!-- set global properties for this build -->
-    <property name="src" location="src" />
-    <property name="classes" location="classes" />
-    <property name="lib" location="lib" />
-    <property name="libdeploy" location="libdeploy" />
-    <property name="distrib" location="distrib" />
-    <property name="distrib.lib" location="distrib/lib" />
-    <property name="libext" location="libext" />
-    <property name="libswt" location="libswt" />
     <property name="deploydir" location="deploydir" />
-    <property name="plugindir" location="/Applications/pentaho/design-tools/data-integration/plugins/steps/ic-filter-plugin" />
-    <!--
-          ==========================
-              Init build
-          ==========================
-     -->
-    <target name="init" description="create timestamp and directories">
-        <echo>Init...</echo>
-        <tstamp />
-        <mkdir dir="${classes}" />
-        <mkdir dir="${lib}" />
-        <mkdir dir="${distrib}" />
+    <property name="plugindir" location="${config.plugindir}" />
+
+    <target name="dist-noresolve" depends="jar" description="Builds and packages the application" />
+    <target name="dist" depends="resolve,jar" description="Builds and packages the application" />
+     
+    <target name="clean" depends="subfloor.clean" description="clean up generated files">
+      <delete dir="${deploydir}" />
     </target>
-    <!--
-           ==========================
-                Compile the code
-           ==========================
-      -->
-    <target name="compile" depends="init" description="compile the source ">
-        <echo>Compiling Plugin...</echo>
-        <javac srcdir="${src}" destdir="${classes}" includeantruntime="false">
-            <classpath id="cpath">
-                <fileset dir="${libext}" includes="*.jar" />
-                <fileset dir="${libswt}" includes="*.jar" />
-                <fileset dir="${libdeploy}" includes="*.jar" />
-                <fileset dir="${libswt}/win32/" includes="*.jar" />
-            </classpath>
-        </javac>
-    </target>
-    <!-- ==========================
-              Copy additional files
-           ==========================
-      -->
-    <target name="copy" depends="compile" description="copy images etc to classes directory">
-        <echo>Copying images etc to classes directory...</echo>
-        <copy todir="${classes}">
-            <fileset dir="${src}" includes="**/*.png,**/*.xml,**/*.properties" />
-        </copy>
-    </target>
-    <!--
-           ==========================
-                    library
-           ==========================
-      -->
-    <target name="plugin" depends="compile, copy" description="generate the plugin library">
-        <echo>Generating the Kettle library plugin.jar ...</echo>
-        <jar jarfile="${lib}/ic-filter-plugin.jar" basedir="${classes}" includes="**/*" />
-    </target>
-    <!--
-           ==========================
-               distrib for plugin
-           ==========================
-      -->
-    <target name="distrib" depends="plugin" description="Create the distribution package...">
-        <echo>Copying libraries to distrib directory...</echo>
-        <copy todir="${distrib}">
-            <fileset dir="${lib}" includes="**/*.jar" />
-        </copy>
-        <copy todir="${distrib.lib}">
-            <fileset dir="${libdeploy}" includes="**/*.jar" />
-        </copy>
-    </target>
-    <!--
-           ==========================
-                deploy to Kettle
-           ==========================
-      -->
-    <target name="deploy" depends="distrib" description="Deploy distribution...">
-        <echo>deploying plugin...</echo>
-        <copy todir="${deploydir}">
-            <fileset dir="${distrib}" includes="**/*.*" />
-        </copy>
-    </target>
-    <!--
-           ==========================
-              Default target: all
-           ==========================
-      -->
-    <target name="default" depends="deploy" description="default = build all" />
-    <!--
-           ==========================
-                  C L E A N
-           ==========================
-      -->
-    <target name="clean" description="clean up generated files">
-        <delete dir="${classes}" />
-        <delete dir="${deploydir}" />
-    </target>
+
     <target name="install" description="install into PDI">
-        <echo>deploying plugin into PDI...</echo>
+        <echo>Deploying plugin into PDI...</echo>
         <mkdir dir="${plugindir}" />
         <copy todir="${plugindir}">
-            <fileset dir="${distrib}" includes="**/*.*" />
+            <fileset dir="${deploydir}" includes="**/*.*" />
         </copy>
     </target>
+
+    <target name="package-noresolve" depends="dist-noresolve" description="Package plugin">
+        <echo>Deploying plugin...</echo>
+        <mkdir dir="${deploydir}" />
+        <mkdir dir="${deploydir}/lib" />
+
+        <copy   file="${dist.dir}/${ivy.artifact.id}-${project.revision}.jar"        tofile="${deploydir}/${ivy.artifact.id}.jar"/>
+        <copy   file="${lib.dir}/ic-filter-${dependency.filter.revision}.jar"        tofile="${deploydir}/lib/ic-filter.jar"/>
+        <copy   file="${lib.dir}/hadoop-client-${dependency.hadoop.revision}.jar"    tofile="${deploydir}/lib/hadoop-client.jar"/>
+        <copy   file="${lib.dir}/hadoop-client-${dependency.hadoop.revision}.jar"    tofile="${deploydir}/lib/hadoop-client.jar"/>
+        <copy   file="${lib.dir}/hadoop-hdfs-${dependency.hadoop.revision}.jar"      tofile="${deploydir}/lib/hadoop-hdfs.jar"/>
+        
+        <copy   file="${lib.dir}/java-bloomfilter-${dependency.bloomfilter.revision}.jar" tofile="${deploydir}/lib/bloomfilter.jar"/>
+        <copy   file="${lib.dir}/commons-configuration-${dependency.commons-configuration.revision}.jar"  tofile="${deploydir}/lib/commons-configuration.jar"/>
+        <copy   file="${lib.dir}/commons-vfs-${dependency.commons-vfs.revision}.jar" tofile="${deploydir}/lib/commons-vfs.jar"/>
+
+        <copy   file="${lib.dir}/hadoop-auth-${dependency.hadoop.revision}.jar" tofile="${deploydir}/lib/hadoop-auth.jar"/>
+        <copy   file="${lib.dir}/hadoop-common-${dependency.hadoop.revision}.jar" tofile="${deploydir}/lib/hadoop-common.jar"/>
+
+        <copy todir="${deploydir}">
+          <fileset dir="${src.dir}">
+            <include name="**/*.png"/>
+            <include name="**/*.xml"/>
+          </fileset>
+        </copy>
+    </target>
+
+    <target name="package" depends="clean,resolve,package-noresolve" description="Package plugin"/>
+
+    <target name="default" depends="package" description="default = build all" />
 </project>
