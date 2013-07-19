@@ -150,6 +150,10 @@ public class BloomDataFilter implements DataFilter
     {
         String name = getFilterName(dataHash);
 
+        if (filters.containsKey(name)) {
+            return filters.get(name);
+        }
+
         try {
             BloomFilter<String> filter = filterProvider.loadFilter(name);
 
@@ -293,7 +297,6 @@ public class BloomDataFilter implements DataFilter
      */
     public boolean contains(Data data)
     {
-
         if (memoryContains(data)) {
             return true;
         }

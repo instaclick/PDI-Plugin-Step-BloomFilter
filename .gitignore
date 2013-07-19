@@ -7,3 +7,4 @@ ic-filter-plugin/dev-lib/
 ic-filter-plugin/deploydir/
 ic-filter-plugin/dist/
 ic-filter-plugin/bin/
+timestamp-partitioner.jar
