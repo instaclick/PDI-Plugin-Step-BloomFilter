@@ -42,6 +42,6 @@ public class TimestampPartitioner implements Partitioner<Text, Text>
         calendar.setTimeInMillis(timestamp * 1000);
 
         //Return the year mod number of reduce tasks as the partitioner number to send the record to.
-        return calendar.get(Calendar.HOUR_OF_DAY) % numReduceTasks;  
+        return calendar.get(Calendar.MINUTE) % numReduceTasks;
     }
 }

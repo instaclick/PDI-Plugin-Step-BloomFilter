@@ -19,6 +19,7 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
+import org.pentaho.di.trans.step.StepListener;
 
 /**
  * Pentaho filter plugin
@@ -43,11 +44,41 @@ public class FilterPlugin extends BaseStep implements StepInterface
     private DataFilter filter;
 
     /**
+     * Filter Step Listener
+     */
+    private StepListener filterStepListener = new StepListener() {
+
+        /**
+         * {@inheritDoc}
+         */
+        public void stepActive(Trans trans, StepMeta stepMeta, StepInterface step) {
+            log.logDebug("Filter Step Listener - step active");
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void stepFinished(Trans trans, StepMeta stepMeta, StepInterface step) {
+            flushFilter();
+            log.logDebug("Filter Step Listener - step finished");
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void stepIdle(Trans trans, StepMeta stepMeta, StepInterface step) {
+            log.logDebug("Filter Step Listener - step idle");
+        }
+    };
+
+    /**
      * {@inheritDoc}
      */
     public FilterPlugin(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta, Trans trans)
     {
         super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+
+        addStepListener(filterStepListener);
     }
 
     /**
@@ -151,18 +182,16 @@ public class FilterPlugin extends BaseStep implements StepInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Flush filter files
      */
-    @Override
-    public void setOutputDone()
+    public void flushFilter()
     {
-    	if (filter != null) {
-            log.logDebug("Flush filters");
-            filter.flush();
-        }
+        logMinimal("Flush filters invoked");
 
-        log.logDebug("Output done");
-        super.setOutputDone();
+    	if (filter != null) {
+            filter.flush();
+            logMinimal("Flush filters complete");
+        }
     }
 
     /**
