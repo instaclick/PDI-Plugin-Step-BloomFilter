@@ -74,6 +74,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
             Integer lookups      = Integer.parseInt(meta.getLookups());
             Integer division     = Integer.parseInt(meta.getDivision());
             Float probability    = Float.parseFloat(meta.getProbability());
+            ProviderType type    = ProviderType.VFS;
             String hashFieldName = meta.getHash();
             String timeFieldName = meta.getTime();
             String uriStr        = meta.getUri();
@@ -95,13 +96,6 @@ public class FilterPlugin extends BaseStep implements StepInterface
                 uri = new URI(uriStr);
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e.getMessage(), e);
-            }
-
-            ProviderType type = ProviderType.VFS;
-            boolean forceVfs  = Boolean.parseBoolean(getVariable("ic.filter.enabled.provider.hdfs", "false"));
-
-            if ("hdfs".equals(uri.getScheme()) && forceVfs) {
-                type = ProviderType.HDFS;
             }
 
             FilterConfig config = FilterConfig.create()
@@ -139,15 +133,13 @@ public class FilterPlugin extends BaseStep implements StepInterface
             }
         }
 
-        if (r == null) {
-            setOutputDone();
-            return false;
-        }
-
         if (r.length < data.hashFieldIndex || r.length < data.timeFieldIndex) {
             String putErrorMessage = getLinesRead() + " - Ignore empty row";
 
-            log.logDebug(putErrorMessage);
+            if (isDebug()) {
+                log.logDebug(putErrorMessage);
+            }
+
             putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin001");
 
             return true;
@@ -156,8 +148,11 @@ public class FilterPlugin extends BaseStep implements StepInterface
         if (r[data.hashFieldIndex] == null || r[data.timeFieldIndex] == null) {
             String putErrorMessage = getLinesRead() + " - Ignore null row";
 
-            log.logDebug(putErrorMessage);
-            putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin001");
+            if (isDebug()) {
+                log.logDebug(putErrorMessage);
+            }
+
+            putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin002");
 
             return true;
         }
@@ -167,12 +162,16 @@ public class FilterPlugin extends BaseStep implements StepInterface
         data.filterData = new Data(data.hashValue, data.timeValue);
 
         if ( ! filter.add(data.filterData)) {
-            String putErrorMessage = getLinesRead() + " - Ignore row : " + data.hashValue;
 
-            log.logDebug(putErrorMessage);
-            putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin001");
+            if (isDebug()) {
+                log.logDebug(getLinesRead() + " - Ignore row : " + data.hashValue);    
+            }
 
             return true;
+        }
+
+        if (isDebug()) {
+            log.logDebug(getLinesRead() + " - Accept row : " + data.hashValue);    
         }
 
         putRow(data.outputRowMeta, r);
@@ -187,7 +186,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
     {
         logMinimal("Flush filters invoked");
 
-    	if (filter != null) {
+        if (filter != null) {
             filter.flush();
             logMinimal("Flush filters complete");
         }
