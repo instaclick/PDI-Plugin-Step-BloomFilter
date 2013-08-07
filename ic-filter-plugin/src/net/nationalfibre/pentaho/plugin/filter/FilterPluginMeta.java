@@ -204,6 +204,15 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         this.time       = "timestamp";
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean supportsErrorHandling() 
+    {
+        return true;
+    }
+
     public String getElements()
     {
         return elements;

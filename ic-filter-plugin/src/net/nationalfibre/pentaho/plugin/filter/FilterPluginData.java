@@ -30,7 +30,7 @@ public class FilterPluginData extends BaseStepData implements StepDataInterface
     /**
      * Timestamp filter index
      */
-    public Integer timeFielIndex = null;
+    public Integer timeFieldIndex = null;
 
     /**
      * Hash field value

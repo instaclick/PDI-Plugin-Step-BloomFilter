@@ -44,41 +44,11 @@ public class FilterPlugin extends BaseStep implements StepInterface
     private DataFilter filter;
 
     /**
-     * Filter Step Listener
-     */
-    private StepListener filterStepListener = new StepListener() {
-
-        /**
-         * {@inheritDoc}
-         */
-        public void stepActive(Trans trans, StepMeta stepMeta, StepInterface step) {
-            log.logDebug("Filter Step Listener - step active");
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public void stepFinished(Trans trans, StepMeta stepMeta, StepInterface step) {
-            flushFilter();
-            log.logDebug("Filter Step Listener - step finished");
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public void stepIdle(Trans trans, StepMeta stepMeta, StepInterface step) {
-            log.logDebug("Filter Step Listener - step idle");
-        }
-    };
-
-    /**
      * {@inheritDoc}
      */
     public FilterPlugin(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta, Trans trans)
     {
         super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
-
-        addStepListener(filterStepListener);
     }
 
     /**
@@ -151,27 +121,56 @@ public class FilterPlugin extends BaseStep implements StepInterface
             log.logDetailed(String.format("Time Div (%s)", division));
             log.logDetailed(String.format("Number Of Lookups (%s)", lookups));
 
-            data.outputRowMeta  = (RowMetaInterface) getInputRowMeta();
-            data.hashFieldIndex = data.outputRowMeta.indexOfValue(hashFieldName);
-            data.timeFielIndex  = data.outputRowMeta.indexOfValue(timeFieldName);
+            // clone the input row structure and place it in our data object
+            data.outputRowMeta = (RowMetaInterface) getInputRowMeta().clone();
+            // use meta.getFields() to change it, so it reflects the output row structure 
+            meta.getFields(data.outputRowMeta, getStepname(), null, null, this);;
 
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
+            // get field index
+            data.hashFieldIndex  = data.outputRowMeta.indexOfValue(hashFieldName);
+            data.timeFieldIndex  = data.outputRowMeta.indexOfValue(timeFieldName);
 
             if (data.hashFieldIndex == null || data.hashFieldIndex < 0) {
                 throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
             }
 
-            if (data.timeFielIndex == null || data.timeFielIndex < 0) {
+            if (data.timeFieldIndex == null || data.hashFieldIndex < 0) {
                 throw new FilterException("Unable to retrieve time field : " + timeFieldName);
             }
         }
 
+        if (r == null) {
+            setOutputDone();
+            return false;
+        }
+
+        if (r.length < data.hashFieldIndex || r.length < data.timeFieldIndex) {
+            String putErrorMessage = getLinesRead() + " - Ignore empty row";
+
+            log.logDebug(putErrorMessage);
+            putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin001");
+
+            return true;
+        }
+
+        if (r[data.hashFieldIndex] == null || r[data.timeFieldIndex] == null) {
+            String putErrorMessage = getLinesRead() + " - Ignore null row";
+
+            log.logDebug(putErrorMessage);
+            putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin001");
+
+            return true;
+        }
+
         data.hashValue  = String.valueOf(r[data.hashFieldIndex]);
-        data.timeValue  = Long.parseLong(String.valueOf(r[data.timeFielIndex]));
+        data.timeValue  = Long.parseLong(String.valueOf(r[data.timeFieldIndex]));
         data.filterData = new Data(data.hashValue, data.timeValue);
 
         if ( ! filter.add(data.filterData)) {
-            log.logDebug(getLinesRead() + " - Ignore row : " + data.filterData.getHash());
+            String putErrorMessage = getLinesRead() + " - Ignore row : " + data.hashValue;
+
+            log.logDebug(putErrorMessage);
+            putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin001");
 
             return true;
         }
@@ -212,31 +211,13 @@ public class FilterPlugin extends BaseStep implements StepInterface
     @Override
     public void dispose(StepMetaInterface smi, StepDataInterface sdi)
     {
+        log.logDebug("dispose");
+
         meta = (FilterPluginMeta) smi;
         data = (FilterPluginData) sdi;
 
+        flushFilter();
+
         super.dispose(smi, sdi);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void run()
-    {
-        logBasic("Starting to run...");
-        try {
-
-            while (processRow(meta, data) && !isStopped());
-
-        } catch (Exception e) {
-            logError("Unexpected error : " + e.toString());
-            logError(Const.getStackTracker(e));
-            setErrors(1);
-            stopAll();
-        } finally {
-            dispose(meta, data);
-            logBasic("Finished, processing " + getLinesRead() + " rows");
-            markStop();
-        }
     }
 }
