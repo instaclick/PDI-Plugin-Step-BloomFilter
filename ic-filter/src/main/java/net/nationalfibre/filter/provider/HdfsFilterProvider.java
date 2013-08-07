@@ -61,7 +61,7 @@ public class HdfsFilterProvider implements FilterProvider
 
     /**
      * Retrieve the base {@link Path}
-     * 
+     *
      * @return
      */
     private Path getPath()
@@ -127,5 +127,6 @@ public class HdfsFilterProvider implements FilterProvider
 
         objectOutputStream.writeObject(filter);
         objectOutputStream.close();
+        fileOutputStream.close();
     }
 }

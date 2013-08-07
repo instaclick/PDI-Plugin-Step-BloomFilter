@@ -26,7 +26,7 @@ public class VfsFilterProvider implements FilterProvider
 
     /**
      * Base URI
-     * 
+     *
      * @param uri
      */
     public VfsFilterProvider(String uri)
@@ -84,8 +84,9 @@ public class VfsFilterProvider implements FilterProvider
         try {
             BloomFilter<String> filter = (BloomFilter<String>) objectInputStream.readObject();
 
-            fileInputStream.close();
             objectInputStream.close();
+            fileInputStream.close();
+            file.close();
 
             return filter;
         } catch (ClassNotFoundException e) {
@@ -114,5 +115,7 @@ public class VfsFilterProvider implements FilterProvider
 
         objectOutputStream.writeObject(filter);
         objectOutputStream.close();
+        fileOutputStream.close();
+        file.close();
     }
 }
