@@ -10,7 +10,7 @@ The IC Filter Plugin is built with Apache Ant and uses Apache Ivy for dependency
 All you'll need to get started is Ant 1.7.0 or newer to build the project. 
 The build scripts will download Ivy if you do not already have it installed.
 
-    $ git clonegit@git.dev:pentaho/bloomfilter-plugin.git
+    $ git clone git@github.com:instaclick/PDI-Plugin-Step-BloomFilter.git
     $ cd bloomfilter-plugin
     $ ant
 
