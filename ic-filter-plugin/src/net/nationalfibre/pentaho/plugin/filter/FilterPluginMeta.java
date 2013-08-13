@@ -36,6 +36,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     private static String FIELD_ELEMENTS     = "elements";
     private static String FIELD_LOOKUPS      = "lookups";
     private static String FIELD_DIVISION     = "division";
+    private static String FIELD_FILTER       = "filter";
     private static String FIELD_HASH         = "hash";
     private static String FIELD_TIME         = "time";
     private static String FIELD_URI          = "uri";
@@ -46,6 +47,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     private String lookups                   = "1440";
     private String hash                      = "hash";
     private String time                      = "timestamp";
+    private String filter                    = "BLOOM";
 
     public FilterPluginMeta() {
         super();
@@ -117,6 +119,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_ELEMENTS, getElements()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_DIVISION, getDivision()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_LOOKUPS, getLookups()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_FILTER, getFilter()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_HASH, getHash()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_TIME, getTime()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_URI, getUri()));
@@ -136,6 +139,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
             setElements(XMLHandler.getTagValue(stepnode, FIELD_ELEMENTS));
             setDivision(XMLHandler.getTagValue(stepnode, FIELD_DIVISION));
             setLookups(XMLHandler.getTagValue(stepnode, FIELD_LOOKUPS));
+            setFilter(XMLHandler.getTagValue(stepnode, FIELD_FILTER));
             setHash(XMLHandler.getTagValue(stepnode, FIELD_HASH));
             setTime(XMLHandler.getTagValue(stepnode, FIELD_TIME));
             setUri(XMLHandler.getTagValue(stepnode, "uri"));
@@ -157,6 +161,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
             setElements(rep.getStepAttributeString(idStep, FIELD_ELEMENTS));
             setDivision(rep.getStepAttributeString(idStep, FIELD_DIVISION));
             setLookups(rep.getStepAttributeString(idStep, FIELD_LOOKUPS));
+            setFilter(rep.getStepAttributeString(idStep, FIELD_FILTER));
             setHash(rep.getStepAttributeString(idStep, FIELD_HASH));
             setTime(rep.getStepAttributeString(idStep, FIELD_TIME));
             setUri(rep.getStepAttributeString(idStep, "uri"));
@@ -179,6 +184,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
             rep.saveStepAttribute(idTransformation, idStep, FIELD_ELEMENTS, getElements());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_DIVISION, getDivision());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_LOOKUPS, getLookups());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_FILTER, getFilter());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_HASH, getHash());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_TIME, getTime());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_URI, getUri());
@@ -200,6 +206,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         this.uri        = "tmp://ic-filter/";
         this.division   = "60";
         this.lookups    = "1440";
+        this.filter     = "BLOOM";
         this.hash       = "hash";
         this.time       = "timestamp";
     }
@@ -261,6 +268,16 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     public void setLookups(String numberOfLookups)
     {
         this.lookups = numberOfLookups;
+    }
+
+    public String getFilter()
+    {
+        return filter;
+    }
+
+    public void setFilter(String filter)
+    {
+        this.filter = filter;
     }
 
     public String getHash()

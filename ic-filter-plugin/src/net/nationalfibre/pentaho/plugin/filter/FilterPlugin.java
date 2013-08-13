@@ -8,6 +8,7 @@ import net.nationalfibre.filter.DataFilter;
 import net.nationalfibre.filter.FilterConfig;
 import net.nationalfibre.filter.FilterFactory;
 import net.nationalfibre.filter.ProviderType;
+import net.nationalfibre.filter.FilterType;
 
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
@@ -74,7 +75,8 @@ public class FilterPlugin extends BaseStep implements StepInterface
             Integer lookups      = Integer.parseInt(meta.getLookups());
             Integer division     = Integer.parseInt(meta.getDivision());
             Float probability    = Float.parseFloat(meta.getProbability());
-            ProviderType type    = ProviderType.VFS;
+            ProviderType pType   = ProviderType.VFS;
+            FilterType   fType   = FilterType.MAP;
             String hashFieldName = meta.getHash();
             String timeFieldName = meta.getTime();
             String uriStr        = meta.getUri();
@@ -92,6 +94,10 @@ public class FilterPlugin extends BaseStep implements StepInterface
                 throw new FilterException("Unable to retrieve filter uri");
             }
 
+            if ("BLOOM".equals(meta.getFilter())) {
+                fType = FilterType.BLOOM;
+            }
+
             try {
                 uri = new URI(uriStr);
             } catch (URISyntaxException e) {
@@ -103,15 +109,21 @@ public class FilterPlugin extends BaseStep implements StepInterface
                 .withExpectedNumberOfElements(lookups)
                 .withNumberOfLookups(lookups)
                 .withTimeDivision(division)
-                .withProvider(type)
+                .withProvider(pType)
+                .withFilter(fType)
                 .withURI(uriStr);
 
             filter = FilterFactory.createFilter(config);
 
             log.logDetailed(String.format("Filter URI (%s)", uriStr));
-            log.logDetailed(String.format("Provider (%s)", type));
-            log.logDetailed(String.format("Expected Number Of Elements (%s)", elements));
-            log.logDetailed(String.format("False Positive Probability (%s)", probability));
+            log.logDetailed(String.format("Filter Type (%s)", fType));
+            log.logDetailed(String.format("Provider (%s)", pType));
+
+            if (fType == FilterType.BLOOM) {
+                log.logDetailed(String.format("Expected Number Of Elements (%s)", elements));
+                log.logDetailed(String.format("False Positive Probability (%s)", probability));
+            }
+
             log.logDetailed(String.format("Time Div (%s)", division));
             log.logDetailed(String.format("Number Of Lookups (%s)", lookups));
 

@@ -7,6 +7,7 @@ public class Main {
             .withExpectedNumberOfElements(100)
             .withFalsePositiveProbability(0.1)
             .withProvider(ProviderType.MEMORY)
+            .withFilter(FilterType.MAP)
             .withNumberOfLookups(100)
             .withTimeDivision(60);
 

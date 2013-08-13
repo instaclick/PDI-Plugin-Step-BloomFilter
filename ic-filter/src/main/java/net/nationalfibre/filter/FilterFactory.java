@@ -43,8 +43,12 @@ public class FilterFactory
      */
     public static DataFilter createFilter(FilterConfig config)
     {
-        if (config.getFilter() == FilterType.BLOMM) {
+        if (config.getFilter() == FilterType.BLOOM) {
             return new BloomDataFilter(config, createProvider(config));
+        }
+
+        if (config.getFilter() == FilterType.MAP) {
+            return new MapDataFilter(config, createProvider(config));
         }
 
         throw new RuntimeException("Invalid filter : " + config.getFilter());

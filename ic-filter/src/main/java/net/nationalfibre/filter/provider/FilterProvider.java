@@ -1,8 +1,7 @@
 package net.nationalfibre.filter.provider;
 
 import java.io.IOException;
-
-import com.skjegstad.utils.BloomFilter;
+import java.io.Serializable;
 
 /**
  * Defines a behavior that should be implement by all filter providers
@@ -27,7 +26,7 @@ public interface FilterProvider
      * @return
      * @throws java.io.IOException
      */
-    public BloomFilter<String> loadFilter(String name) throws IOException;
+    public Serializable loadFilter(String name) throws IOException;
 
     /**
      * Save the given filter into this provider
@@ -36,5 +35,5 @@ public interface FilterProvider
      * @param filter
      * @throws java.io.IOException
      */
-    public void saveFilter(String name, BloomFilter<String> filter) throws IOException;
+    public void saveFilter(String name, Serializable filter) throws IOException;
 }

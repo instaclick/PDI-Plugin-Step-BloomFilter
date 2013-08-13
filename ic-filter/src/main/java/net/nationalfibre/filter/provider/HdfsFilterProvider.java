@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -90,15 +91,14 @@ public class HdfsFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public BloomFilter<String> loadFilter(String name) throws IOException
+    public Serializable loadFilter(String name) throws IOException
     {
         Path file                           = getPath(name);
         InputStream fileInputStream         = getHdfs().open(file);
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
         try {
-            @SuppressWarnings("unchecked")
-            BloomFilter<String> filter = (BloomFilter<String>) objectInputStream.readObject();
+            Serializable filter = (Serializable) objectInputStream.readObject();
 
             fileInputStream.close();
             objectInputStream.close();
@@ -112,7 +112,7 @@ public class HdfsFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public void saveFilter(String name, BloomFilter<String> filter) throws IOException
+    public void saveFilter(String name, Serializable filter) throws IOException
     {
         FileSystem fs   = getHdfs();
         Path folder     = getPath();

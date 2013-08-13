@@ -15,11 +15,10 @@ public class BloomDataFilterVfsTest extends BaseFilterTest
     DataFilter filter;
     FilterProvider provider = null;
     FileObject folder = null;
-    FilterConfig config = new FilterConfig();
 
     public BloomDataFilterVfsTest() throws FileSystemException, KettleFileException
     {
-        folder   = VFS.getManager().resolveFile(getParameter("provider.uri.vfs", "ram://ic-filter/") + System.currentTimeMillis());
+        folder   = VFS.getManager().resolveFile(getParameter("provider.uri.vfs", "tmp://ic-filter/") + System.currentTimeMillis());
         provider = new VfsFilterProvider(folder.getURL().toString());
         filter   = new BloomDataFilter(config, provider);
     }

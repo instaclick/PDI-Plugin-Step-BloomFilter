@@ -1,6 +1,7 @@
 package net.nationalfibre.filter.provider;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ public class InMemoryFilterProvider implements FilterProvider
     /**
      * Map of {@link BloomFilter}
      */
-    private Map<String, BloomFilter<String>> map = new HashMap<String, BloomFilter<String>>();
+    private Map<String, Serializable> map = new HashMap<String, Serializable>();
 
     /**
      * {@inheritDoc}
@@ -29,7 +30,7 @@ public class InMemoryFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public BloomFilter<String> loadFilter(String name) throws IOException
+    public Serializable loadFilter(String name) throws IOException
     {
         return map.get(name);
     }
@@ -37,7 +38,7 @@ public class InMemoryFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public void saveFilter(String name, BloomFilter<String> filter) throws IOException
+    public void saveFilter(String name, Serializable filter) throws IOException
     {
         map.put(name, filter);
     }

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 
 import org.apache.commons.vfs.FileObject;
 import org.pentaho.di.core.exception.KettleFileException;
@@ -75,14 +76,14 @@ public class VfsFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public BloomFilter<String> loadFilter(String name) throws IOException
+    public Serializable loadFilter(String name) throws IOException
     {
         FileObject file                     = getFile(name);
         InputStream fileInputStream         = file.getContent().getInputStream();
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
         try {
-            BloomFilter<String> filter = (BloomFilter<String>) objectInputStream.readObject();
+            Serializable filter = (Serializable) objectInputStream.readObject();
 
             objectInputStream.close();
             fileInputStream.close();
@@ -97,7 +98,7 @@ public class VfsFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public void saveFilter(String name, BloomFilter<String> filter) throws IOException
+    public void saveFilter(String name, Serializable filter) throws IOException
     {
         FileObject folder = getFile();
         FileObject file   = getFile(name);

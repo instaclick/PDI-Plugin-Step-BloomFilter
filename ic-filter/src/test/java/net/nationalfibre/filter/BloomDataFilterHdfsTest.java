@@ -10,15 +10,15 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.Before;
+import org.junit.Ignore;
 
+@Ignore
 public class BloomDataFilterHdfsTest extends BaseFilterTest
 {
-
     DataFilter filter;
     FilterProvider provider = null;
     FileSystem hdfs         = null;
     String folder           = null;
-    FilterConfig config     = new FilterConfig();
     Configuration hdfsConf  = new Configuration();
 
     public BloomDataFilterHdfsTest() throws IOException

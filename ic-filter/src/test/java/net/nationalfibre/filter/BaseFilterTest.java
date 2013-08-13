@@ -1,5 +1,6 @@
 package net.nationalfibre.filter;
 
+import com.skjegstad.utils.BloomFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -9,12 +10,15 @@ import java.util.Properties;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+import org.junit.Ignore;
 
 import org.junit.Test;
 
 public abstract class BaseFilterTest {
 
     private Properties properties = null;
+
+    protected FilterConfig config     = new FilterConfig();
 
     protected abstract DataFilter getFilter();
 
@@ -219,6 +223,54 @@ public abstract class BaseFilterTest {
 
         while (startTime < finalTime) {
             assertFalse(filter.add(new Data("1", startTime++)));
+        }
+    }
+
+    @Test
+    public void testAddExpectedNumberOfElements()
+    {
+        DataFilter filter   = getFilter();
+        double count        = 0;
+        double max          = config.getExpectedNumberOfElements();
+        Long timestamp      = 1293840000000L;
+        Data data           = null;
+
+        if ( ! (filter instanceof MapDataFilter)) {
+            return;
+        }
+
+        while (count <= max) {
+            count++;
+
+            data = new Data("hash_"+count, timestamp);
+
+            assertFalse(filter.contains(data));
+            assertTrue(filter.add(data));
+        }
+    }
+
+    @Test
+    @Ignore
+    public void testAddExpectedNumberOfElementsBlommFilter()
+    {
+        double probability  = config.getFalsePositiveProbability();
+        int elements     = config.getExpectedNumberOfElements();
+
+        BloomFilter filter  = new BloomFilter<String>(probability, elements);
+        int max             = elements;
+        int count           = 0;
+        String data         = null;
+
+        while (count <= max) {
+            count++;
+
+            System.out.println(count);
+
+            data = "hash_"+count;
+
+            assertFalse(filter.contains(data));
+            filter.add(data);
+            assertTrue(filter.contains(data));
         }
     }
 }

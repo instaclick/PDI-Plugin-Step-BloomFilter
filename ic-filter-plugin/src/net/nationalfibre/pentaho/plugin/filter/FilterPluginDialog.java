@@ -17,6 +17,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+
 import org.pentaho.di.core.Const;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
@@ -65,6 +70,29 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
     private Text textUri;
     private FormData formUriLabel;
     private FormData formUriText;
+
+    private Label    labelFilterType;
+    private CCombo   comboFilterType;
+    private FormData formFilterTypeLabel;
+    private FormData formFilterTypeCombo;
+
+    private static String[] filterTypes = { "BLOOM", "MAP" }; 
+
+    private SelectionAdapter comboFilterTypeListener = new SelectionAdapter() {
+
+        public void widgetSelected(SelectionEvent e) {
+
+            if ("BLOOM".equals(comboFilterType.getText())) {
+                textProbability.setEnabled(true);
+                textElements.setEnabled(true); 
+
+                return;
+            }
+
+            textProbability.setEnabled(false);
+            textElements.setEnabled(false); 
+        }
+    };
 
     public FilterPluginDialog(Shell parent, Object in, TransMeta transMeta, String sname)
     {
@@ -124,6 +152,32 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         wStepname.setLayoutData(fdStepname);
 
+         // Filter Type
+        labelFilterType=new Label(shell, SWT.RIGHT);
+        labelFilterType.setText(Messages.getString("FilterPlugin.ValueHash.FilterType"));
+        props.setLook(labelFilterType);
+
+        formFilterTypeLabel       = new FormData();
+        formFilterTypeLabel.left  = new FormAttachment(0, 0);
+        formFilterTypeLabel.top   = new FormAttachment(wStepname, margin);
+        formFilterTypeLabel.right = new FormAttachment(middle, 0);
+
+        labelFilterType.setLayoutData(formFilterTypeLabel);
+
+        comboFilterType = new CCombo(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER | SWT.READ_ONLY);
+
+        comboFilterType.setToolTipText(Messages.getString("FilterPlugin.ValueHash.FilterType"));
+        comboFilterType.addSelectionListener(comboFilterTypeListener);
+        comboFilterType.setItems(filterTypes);
+        props.setLook(comboFilterType);
+
+        formFilterTypeCombo      = new FormData();
+        formFilterTypeCombo.left = new FormAttachment(middle, margin);
+        formFilterTypeCombo.top  = new FormAttachment(wStepname, margin);
+        formFilterTypeCombo.right= new FormAttachment(100, 0);
+
+        comboFilterType.setLayoutData(formFilterTypeCombo);  
+
         // hash line
         labelHash = new Label(shell, SWT.RIGHT);
         labelHash.setText(Messages.getString("FilterPlugin.ValueHash.Label"));
@@ -132,7 +186,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formHashLabel       = new FormData();
         formHashLabel.left  = new FormAttachment(0, 0);
         formHashLabel.right = new FormAttachment(middle, -margin);
-        formHashLabel.top   = new FormAttachment(wStepname, margin);
+        formHashLabel.top   = new FormAttachment(comboFilterType , margin);
 
         labelHash.setLayoutData(formHashLabel);
 
@@ -144,7 +198,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formHashText        = new FormData();
         formHashText.left   = new FormAttachment(middle, 0);
         formHashText.right  = new FormAttachment(100, 0);
-        formHashText.top    = new FormAttachment(wStepname, margin);
+        formHashText.top    = new FormAttachment(comboFilterType, margin);
 
         textHash.setLayoutData(formHashText);
 
@@ -389,6 +443,24 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         if (input.getProbability() != null) {
             textProbability.setText(input.getProbability());
         }
+
+        String filter = input.getFilter();
+
+        if (filter == null || filter.length() < 1) {
+            filter = "BLOOM";
+        }
+
+        if ("BLOOM".equals(filter)) {
+            textProbability.setEnabled(true);
+            textElements.setEnabled(true); 
+            comboFilterType.select(0);
+
+            return;
+        }
+
+        textProbability.setEnabled(false);
+        textElements.setEnabled(false); 
+        comboFilterType.select(1);
     }
 
     private void cancel()
@@ -407,6 +479,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         input.setHash(textHash.getText());
         input.setTime(textTime.getText());
         input.setLookups(textLookups.getText());
+        input.setFilter(comboFilterType.getText());
         input.setDivision(textDivision.getText());
         input.setElements(textElements.getText());
         input.setProbability(textProbability.getText());

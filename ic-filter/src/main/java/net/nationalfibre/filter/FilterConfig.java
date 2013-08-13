@@ -35,7 +35,7 @@ public class FilterConfig
     /**
      * Filter type
      */
-    private FilterType filter = FilterType.BLOMM;
+    private FilterType filter = FilterType.BLOOM;
 
     /**
      * Provider type

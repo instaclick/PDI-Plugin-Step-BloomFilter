@@ -8,14 +8,12 @@ import java.util.Set;
 
 import net.nationalfibre.filter.provider.FilterProvider;
 
-import com.skjegstad.utils.BloomFilter;
-
 /**
- * Bloom filter based on {@link com.skjegstad.utils.BloomFilter}
+ * Bloom filter based on {@link java.util.HashSet}
  *
  * @author Fabio B. Silva <fabios@nationalfibre.net>
  */
-public class BloomDataFilter implements DataFilter
+public class MapDataFilter implements DataFilter
 {
     /**
      * Filter configuration
@@ -38,21 +36,21 @@ public class BloomDataFilter implements DataFilter
     private Map<Integer, Boolean> containsFilters;
 
     /**
-     * Map of {@link com.skjegstad.utils.BloomFilter}
+     * Map of {@link HashSet}
      */
-    private Map<String, BloomFilter<String>> filters;
+    private Map<String, HashSet<String>> filters;
 
     /**
      * @param config            Filter configuration
      * @param filterProvider    Filter provider
      */
-    public BloomDataFilter(FilterConfig config, FilterProvider filterProvider)
+    public MapDataFilter(FilterConfig config, FilterProvider filterProvider)
     {
         this.config          = config;
         this.filterProvider  = filterProvider;
         this.dirtyFilters    = new HashSet<String>();
         this.containsFilters = new HashMap<Integer, Boolean>();
-        this.filters         = new HashMap<String, BloomFilter<String>>();
+        this.filters         = new HashMap<String, HashSet<String>>();
     }
 
     /**
@@ -89,7 +87,7 @@ public class BloomDataFilter implements DataFilter
      */
     private String getFilterName(int dataHash)
     {
-        return dataHash + ".bloom";
+        return dataHash + ".map";
     }
 
     /**
@@ -146,7 +144,7 @@ public class BloomDataFilter implements DataFilter
      * @param dataHash
      * @return
      */
-    private BloomFilter<String> loadFilter(int dataHash)
+    private HashSet<String> loadFilter(int dataHash)
     {
         String name = getFilterName(dataHash);
 
@@ -155,7 +153,7 @@ public class BloomDataFilter implements DataFilter
         }
 
         try {
-            BloomFilter<String> filter = (BloomFilter<String>) filterProvider.loadFilter(name);
+            HashSet<String> filter = (HashSet<String>) filterProvider.loadFilter(name);
 
             filters.put(name, filter);
 
@@ -172,7 +170,7 @@ public class BloomDataFilter implements DataFilter
      * @param data
      * @return
      */
-    private BloomFilter<String> loadFilter(Data data)
+    private HashSet<String> loadFilter(Data data)
     {
         return loadFilter(getDataHashCode(data));
     }
@@ -183,7 +181,7 @@ public class BloomDataFilter implements DataFilter
      * @param data
      * @return
      */
-    private BloomFilter<String> loadOrCreateFilter(Data data)
+    private HashSet<String> loadOrCreateFilter(Data data)
     {
         String name = getFilterName(data);
 
@@ -195,7 +193,7 @@ public class BloomDataFilter implements DataFilter
             return loadFilter(data);
         }
 
-        filters.put(name, new BloomFilter<String>(config.getFalsePositiveProbability(), config.getExpectedNumberOfElements()));
+        filters.put(name, new HashSet<String>());
         markAsDirty(name);
 
         return filters.get(name);
@@ -265,7 +263,7 @@ public class BloomDataFilter implements DataFilter
             return false;
         }
 
-        BloomFilter<String> filter = loadOrCreateFilter(data);
+        HashSet<String> filter = loadOrCreateFilter(data);
         String hash = data.getHash();
 
         filter.add(hash);
