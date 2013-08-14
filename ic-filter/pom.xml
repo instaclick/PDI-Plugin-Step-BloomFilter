@@ -9,6 +9,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <hadoop.version>2.0.0-cdh4.1.1</hadoop.version>
+        <kettle.version>4.1.4-SNAPSHOT</kettle.version>
         <skipTests>false</skipTests>
     </properties>
     <dependencies>
@@ -31,7 +32,7 @@
         <dependency>
             <groupId>pentaho.kettle</groupId>
             <artifactId>kettle-core</artifactId>
-            <version>4.1.4-SNAPSHOT</version>
+            <version>${kettle.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -78,6 +79,16 @@
             <id>snapshots</id>
             <name>libs-snapshot</name>
             <url>https://repository.cloudera.com/artifactory/libs-snapshot</url>
+        </repository>
+        <repository>
+            <id>mvnrepository</id>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
     </repositories>
     <build>

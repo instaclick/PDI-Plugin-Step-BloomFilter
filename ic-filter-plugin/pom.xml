@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.nationalfibre</groupId>
+    <artifactId>ic-filter-plugin</artifactId>
+    <version>1.0.3-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>ic-filter-plugin</name>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.plugin.install>/Applications/pentaho/design-tools/data-integration/plugins/steps/ic-filter-plugin</project.plugin.install>
+        <project.plugin.deploy>${project.build.directory}/plugin</project.plugin.deploy>
+        <project.plugin.deploylib>${project.build.directory}/plugin/lib</project.plugin.deploylib>
+        <hadoop.version>2.0.0-cdh4.1.1</hadoop.version>
+        <kettle.version>4.1.4-SNAPSHOT</kettle.version>
+        <commons-configuration.version>1.6</commons-configuration.version>
+        <commons-vfs.version>2.0-20090205</commons-vfs.version>
+        <ic-filter.version>1.1.3-SNAPSHOT</ic-filter.version>
+        <java-bloomfilter.version>1.0</java-bloomfilter.version>
+        <skipTests>false</skipTests>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.skjegstad</groupId>
+            <artifactId>java-bloomfilter</artifactId>
+            <version>${java-bloomfilter.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.nationalfibre</groupId>
+            <artifactId>ic-filter</artifactId>
+            <version>${ic-filter.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-vfs</groupId>
+            <artifactId>commons-vfs</artifactId>
+            <version>${commons-vfs.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>pentaho.kettle</groupId>
+            <artifactId>kettle-core</artifactId>
+            <version>${kettle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>pentaho.kettle</groupId>
+            <artifactId>kettle-engine</artifactId>
+            <version>${kettle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>pentaho.kettle</groupId>
+            <artifactId>kettle-ui-swt</artifactId>
+            <version>${kettle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>pentaho.kettle</groupId>
+            <artifactId>kettle-db</artifactId>
+            <version>${kettle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.swt.win32.win32</groupId>
+            <artifactId>x86</artifactId>
+            <version>3.3.0-v3346</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>${commons-configuration.version}</version>
+        </dependency>
+    </dependencies>
+    <repositories>
+        <repository>
+            <id>repo.local</id>
+            <name>repo-local</name>
+            <url>file:${project.basedir}/../ic-filter/repo</url>
+        </repository>
+        <repository>
+            <id>repository.pentaho.org</id>
+            <name>repository.pentaho.org</name>
+            <url>http://repository.pentaho.org/artifactory/pentaho</url>
+        </repository>
+        <repository>
+            <id>thirdparty.repository.pentaho.org</id>
+            <name>thirdparty.pentaho.org</name>
+            <url>http://repository.pentaho.org/artifactory/third-party</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>cdh-build</name>
+            <url>https://repository.cloudera.com/artifactory/cdh-build</url>
+        </repository>
+        <repository>
+            <snapshots />
+            <id>snapshots</id>
+            <name>libs-snapshot</name>
+            <url>https://repository.cloudera.com/artifactory/libs-snapshot</url>
+        </repository>
+        <repository>
+            <id>mvnrepository</id>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
+    <build>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/test/java</directory>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>antrun-install-filter-plugin</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <target name="install-filter-plugin">
+                                <delete dir="${project.plugin.install}"/>
+                                <mkdir dir="${project.plugin.install}" />
+                                <copy todir="${project.plugin.install}">
+                                    <fileset dir="${project.plugin.deploy}" includes="**/*.*" />
+                                </copy>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>antrun-package-filter-plugin</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target name="package-filter-plugin">
+                                <dependencyfilesets />
+                                <mkdir dir="${project.plugin.deploy}" />
+                                <mkdir dir="${project.plugin.deploylib}" />
+
+                                <copy tofile="${project.plugin.deploy}/ic-filter-plugin.jar" file="${project.build.directory}/${project.build.finalName}.jar" />
+                                <copy tofile="${project.plugin.deploylib}/ic-filter.jar">
+                                    <fileset refid="net.nationalfibre:ic-filter:jar" />
+                                </copy>
+                                <copy tofile="${project.plugin.deploylib}/hadoop-client.jar">
+                                    <fileset refid="org.apache.hadoop:hadoop-client:jar" />
+                                </copy>
+                                <copy tofile="${project.plugin.deploylib}/hadoop-hdfs.jar">
+                                    <fileset refid="org.apache.hadoop:hadoop-hdfs:jar" />
+                                </copy>
+                                <copy tofile="${project.plugin.deploylib}/hadoop-auth.jar">
+                                    <fileset refid="org.apache.hadoop:hadoop-auth:jar" />
+                                </copy>
+                                <copy tofile="${project.plugin.deploylib}/hadoop-common.jar">
+                                    <fileset refid="org.apache.hadoop:hadoop-common:jar" />
+                                </copy>
+                                <copy tofile="${project.plugin.deploylib}/bloomfilter.jar">
+                                    <fileset refid="com.skjegstad:java-bloomfilter:jar" />
+                                </copy>
+                                <copy tofile="${project.plugin.deploylib}/commons-configuration.jar">
+                                    <fileset refid="commons-configuration:commons-configuration:jar" />
+                                </copy>
+                                <copy tofile="${project.plugin.deploylib}/commons-vfs.jar">
+                                    <fileset refid="commons-vfs:commons-vfs:jar" />
+                                </copy>
+                                <copy todir="${project.plugin.deploy}">
+                                    <fileset dir="${basedir}/src/main/resources">
+                                        <include name="**/*.*" />
+                                    </fileset>
+                                </copy>
+                                <tar destfile="${project.build.directory}/ic-filter-plugin-pdi-${project.version}.tar" basedir="${project.plugin.deploy}"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.15</version>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

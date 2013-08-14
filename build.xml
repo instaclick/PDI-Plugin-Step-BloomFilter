@@ -3,26 +3,32 @@
 
     <target name="deploy-ic-filter">
         <exec dir="ic-filter" executable="mvn">
+            <arg value="clean" />
             <arg value="install" />
             <arg value="-DskipTests=true" />
         </exec>
     </target>
 
     <target name="deploy-ic-filter-plugin">
-        <exec dir="ic-filter-plugin" executable="ant" />
+        <exec dir="ic-filter-plugin" executable="mvn">
+            <arg value="clean" />
+            <arg value="package" />
+            <arg value="-DskipTests=true" />
+        </exec>
     </target>
 
     <target name="deploy" depends="deploy-ic-filter,deploy-ic-filter-plugin"/>
 
     <target name="default" depends="deploy">
-        <input message="Deploy PDI Plugin ?" validargs="y,n" addproperty="do.install" />
+        <input message="Install PDI Plugin ?" validargs="y,n" addproperty="do.install" />
         <condition property="do.abort">
             <equals arg1="n" arg2="${do.install}" />
         </condition>
-        <fail if="do.abort">Plugin Deploy aborted.</fail>
+        <fail if="do.abort">Plugin Install aborted.</fail>
         
-        <exec dir="ic-filter-plugin" executable="ant">
+        <exec dir="ic-filter-plugin" executable="mvn">
             <arg value="install" />
+            <arg value="-DskipTests=true" />
         </exec>
     </target>
 
