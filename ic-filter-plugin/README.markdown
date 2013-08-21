@@ -29,21 +29,15 @@ Various caching techniques are employed to ensure speediness. This filter will h
 
 Building
 --------
-The IC Filter Plugin is built with Apache Ant and uses Apache Ivy for dependency management. 
-All you'll need to get started is Ant 1.7.0 or newer to build the project. 
-The build scripts will download Ivy if you do not already have it installed.
+The IC Filter Plugin is built with maven for dependency management. 
+All you'll need to get started is maven.
 
     $ git clone git@github.com:instaclick/PDI-Plugin-Step-BloomFilter.git
-    $ cd PDI-Plugin-Step-BloomFilter
-    $ ant
+    $ cd PDI-Plugin-Step-BloomFilter/ic-filter-plugin
+    $ mvn package
 
-This will produce a plugin in ic-filter-plugin/deploydir This archive can then be extracted into your Pentaho Data Integration plugin directory.
-
-Developing with Eclipse
----------------
-Import ic-filter-plugin into Eclipse
-Running the following targets will configure the Eclipse project to reference the required libraries:
-ant resolve create-dot-classpath
+This will produce a plugin in ic-filter-plugin/target/ic-filter-plugin-pdi-{version}.tar,
+This archive can then be extracted into your Pentaho Data Integration plugin directory.
 
 
 Pentaho Configuration
@@ -55,5 +49,5 @@ Pentaho Configuration
 * Hash Field                  = hash              # string    -> hash field
 * Timestamp Field             = timestamp         # string    -> timestamp field
 * URL to store filters        = tmp://ic-filter/  # string    -> Filters URI
-* Filter Div                  = 60                # double    -> The integer result of (${row.timestamp} / ${division}) will be the filter hash code
+* Timestamp Window Size       = 60                # double    -> The integer result of (${row.timestamp} / ${division}) will be the filter hash code
                                                   # Epoch times divided by 60 equals epoch minutes
