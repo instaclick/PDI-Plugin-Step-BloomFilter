@@ -3,13 +3,16 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.nationalfibre</groupId>
     <artifactId>ic-filter</artifactId>
-    <version>1.1.3-SNAPSHOT</version>
+    <version>1.1.4-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>ic-filter</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <commons-vfs.version>2.0-20090205</commons-vfs.version>
+        <java-bloomfilter.version>1.0</java-bloomfilter.version>
         <hadoop.version>2.0.0-cdh4.1.1</hadoop.version>
         <kettle.version>4.1.4-SNAPSHOT</kettle.version>
+        <guava.version>r09</guava.version>
         <skipTests>false</skipTests>
     </properties>
     <dependencies>
@@ -20,19 +23,26 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.skjegstad</groupId>
             <artifactId>java-bloomfilter</artifactId>
-            <version>1.0</version>
+            <version>${java-bloomfilter.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-vfs</groupId>
             <artifactId>commons-vfs</artifactId>
-            <version>2.0-20090205</version>
+            <version>${commons-vfs.version}</version>
         </dependency>
         <dependency>
             <groupId>pentaho.kettle</groupId>
             <artifactId>kettle-core</artifactId>
             <version>${kettle.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>

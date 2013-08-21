@@ -9,10 +9,8 @@ import org.apache.commons.vfs.VFS;
 import org.junit.Before;
 import org.pentaho.di.core.exception.KettleFileException;
 
-public class BloomDataFilterVfsTest extends BaseFilterTest
+public class BloomDataFilterVfsTest extends BaseBloomFilterTest
 {
-
-    DataFilter filter;
     FilterProvider provider = null;
     FileObject folder = null;
 
@@ -20,7 +18,6 @@ public class BloomDataFilterVfsTest extends BaseFilterTest
     {
         folder   = VFS.getManager().resolveFile(getParameter("provider.uri.vfs", "tmp://ic-filter/") + System.currentTimeMillis());
         provider = new VfsFilterProvider(folder.getURL().toString());
-        filter   = new BloomDataFilter(config, provider);
     }
 
     @Before
@@ -36,6 +33,6 @@ public class BloomDataFilterVfsTest extends BaseFilterTest
     @Override
     protected DataFilter getFilter()
     {
-        return filter;
+        return new BloomDataFilter(config, provider);
     }
 }

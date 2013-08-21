@@ -5,15 +5,11 @@ import net.nationalfibre.filter.provider.InMemoryFilterProvider;
 
 public class MapDataFilterInMemoryTest extends BaseFilterTest {
 
-    DataFilter filter;
     FilterProvider provider = new InMemoryFilterProvider();
 
-    public MapDataFilterInMemoryTest() {
-        filter = new MapDataFilter(config, provider);
-    }
-
     @Override
-    protected DataFilter getFilter() {
-        return filter;
+    protected DataFilter getFilter()
+    {
+        return new MapDataFilter(config, provider);
     }
 }

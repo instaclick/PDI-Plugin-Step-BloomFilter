@@ -11,7 +11,6 @@ import org.pentaho.di.core.exception.KettleFileException;
 
 public class MapDataFilterVfsTest extends BaseFilterTest
 {
-    DataFilter filter;
     FilterProvider provider = null;
     FileObject folder = null;
 
@@ -19,7 +18,6 @@ public class MapDataFilterVfsTest extends BaseFilterTest
     {
         folder   = VFS.getManager().resolveFile(getParameter("provider.uri.vfs", "tmp://ic-filter/") + System.currentTimeMillis());
         provider = new VfsFilterProvider(folder.getURL().toString());
-        filter   = new MapDataFilter(config, provider);
     }
 
     @Before
@@ -35,6 +33,6 @@ public class MapDataFilterVfsTest extends BaseFilterTest
     @Override
     protected DataFilter getFilter()
     {
-        return filter;
+        return new MapDataFilter(config, provider);
     }
 }

@@ -10,12 +10,12 @@ public class FilterConfig
     /**
      * Expected number of elements
      */
-    private int expectedNumberOfElements = 1000;
+    private int expectedNumberOfElements = 100;
 
     /**
      * False positive probability
      */
-    private double falsePositiveProbability = 0.1;
+    private double falsePositiveProbability = 0.001;
 
     /**
      * URI to store filters
@@ -62,7 +62,8 @@ public class FilterConfig
      * Gets {@link falsePositiveProbability}
      * @return
      */
-    public double getFalsePositiveProbability() {
+    public double getFalsePositiveProbability()
+    {
         return falsePositiveProbability;
     }
 

@@ -1,0 +1,29 @@
+<assembly>
+    <id>dep</id>
+    <formats>
+        <format>jar</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <includes>
+                <include>README*</include>
+                <include>LICENSE*</include>
+                <include>NOTICE*</include>
+                <include>pom.xml</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>src</directory>
+        </fileSet>
+    </fileSets>
+    <dependencySets>
+        <dependencySet>
+            <unpack>true</unpack>
+            <scope>runtime</scope>
+            <excludes>
+                <!-- <exclude>junit:junit</exclude> -->
+            </excludes>
+        </dependencySet>
+    </dependencySets>
+</assembly>

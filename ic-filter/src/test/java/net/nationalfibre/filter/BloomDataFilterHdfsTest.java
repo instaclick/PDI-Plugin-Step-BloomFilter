@@ -13,9 +13,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 
 @Ignore
-public class BloomDataFilterHdfsTest extends BaseFilterTest
+public class BloomDataFilterHdfsTest extends BaseBloomFilterTest
 {
-    DataFilter filter;
     FilterProvider provider = null;
     FileSystem hdfs         = null;
     String folder           = null;
@@ -29,7 +28,6 @@ public class BloomDataFilterHdfsTest extends BaseFilterTest
 
         hdfs     = FileSystem.get(hdfsConf);
         provider = new HdfsFilterProvider(folder);
-        filter   = new BloomDataFilter(config, provider);
     }
 
     @Before
@@ -49,6 +47,6 @@ public class BloomDataFilterHdfsTest extends BaseFilterTest
     @Override
     protected DataFilter getFilter()
     {
-        return filter;
+        return new BloomDataFilter(config, provider);
     }
 }

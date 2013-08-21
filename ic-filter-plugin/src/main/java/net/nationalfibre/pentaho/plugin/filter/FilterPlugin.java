@@ -10,8 +10,8 @@ import net.nationalfibre.filter.FilterFactory;
 import net.nationalfibre.filter.ProviderType;
 import net.nationalfibre.filter.FilterType;
 
-import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransMeta;
@@ -20,7 +20,7 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.step.StepListener;
+import static net.nationalfibre.pentaho.plugin.filter.Messages.getString;
 
 /**
  * Pentaho filter plugin
@@ -61,95 +61,25 @@ public class FilterPlugin extends BaseStep implements StepInterface
         meta = (FilterPluginMeta) smi;
         data = (FilterPluginData) sdi;
 
-        Object[] r = getRow(); // get row, blocks when needed! no more input to be expected...
+        Object[] r = getRow();
 
         if (r == null) {
             setOutputDone();
+
             return false;
         }
 
         if (first) {
             first = false;
 
-            Integer elements     = Integer.parseInt(meta.getElements());
-            Integer lookups      = Integer.parseInt(meta.getLookups());
-            Integer division     = Integer.parseInt(meta.getDivision());
-            Float probability    = Float.parseFloat(meta.getProbability());
-            ProviderType pType   = ProviderType.VFS;
-            FilterType   fType   = FilterType.MAP;
-            String hashFieldName = meta.getHash();
-            String timeFieldName = meta.getTime();
-            String uriStr        = meta.getUri();
-            URI uri              = null;
-
-            if (hashFieldName == null) {
-                throw new FilterException("Unable to retrieve hash field name");
-            }
-
-            if (timeFieldName == null) {
-                throw new FilterException("Unable to retrieve timestamp field name");
-            }
-
-            if (uriStr == null) {
-                throw new FilterException("Unable to retrieve filter uri");
-            }
-
-            if ("BLOOM".equals(meta.getFilter())) {
-                fType = FilterType.BLOOM;
-            }
-
-            try {
-                uri = new URI(uriStr);
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-
-            FilterConfig config = FilterConfig.create()
-                .withFalsePositiveProbability(probability)
-                .withExpectedNumberOfElements(lookups)
-                .withNumberOfLookups(lookups)
-                .withTimeDivision(division)
-                .withProvider(pType)
-                .withFilter(fType)
-                .withURI(uriStr);
-
-            filter = FilterFactory.createFilter(config);
-
-            log.logDetailed(String.format("Filter URI (%s)", uriStr));
-            log.logDetailed(String.format("Filter Type (%s)", fType));
-            log.logDetailed(String.format("Provider (%s)", pType));
-
-            if (fType == FilterType.BLOOM) {
-                log.logDetailed(String.format("Expected Number Of Elements (%s)", elements));
-                log.logDetailed(String.format("False Positive Probability (%s)", probability));
-            }
-
-            log.logDetailed(String.format("Time Div (%s)", division));
-            log.logDetailed(String.format("Number Of Lookups (%s)", lookups));
-
-            // clone the input row structure and place it in our data object
-            data.outputRowMeta = (RowMetaInterface) getInputRowMeta().clone();
-            // use meta.getFields() to change it, so it reflects the output row structure 
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this);;
-
-            // get field index
-            data.hashFieldIndex  = data.outputRowMeta.indexOfValue(hashFieldName);
-            data.timeFieldIndex  = data.outputRowMeta.indexOfValue(timeFieldName);
-
-            if (data.hashFieldIndex == null || data.hashFieldIndex < 0) {
-                throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
-            }
-
-            if (data.timeFieldIndex == null || data.hashFieldIndex < 0) {
-                throw new FilterException("Unable to retrieve time field : " + timeFieldName);
-            }
+            initFilter();
         }
 
         if (r.length < data.hashFieldIndex || r.length < data.timeFieldIndex) {
             String putErrorMessage = getLinesRead() + " - Ignore empty row";
 
             if (isDebug()) {
-                log.logDebug(putErrorMessage);
+                logDebug(putErrorMessage);
             }
 
             putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin001");
@@ -161,7 +91,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
             String putErrorMessage = getLinesRead() + " - Ignore null row";
 
             if (isDebug()) {
-                log.logDebug(putErrorMessage);
+                logDebug(putErrorMessage);
             }
 
             putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin002");
@@ -176,14 +106,14 @@ public class FilterPlugin extends BaseStep implements StepInterface
         if ( ! filter.add(data.filterData)) {
 
             if (isDebug()) {
-                log.logDebug(getLinesRead() + " - Ignore row : " + data.hashValue);    
+                logDebug(getLinesRead() + " - Ignore row : " + data.hashValue);    
             }
 
             return true;
         }
 
         if (isDebug()) {
-            log.logDebug(getLinesRead() + " - Accept row : " + data.hashValue);    
+            logDebug(getLinesRead() + " - Accept row : " + data.hashValue);    
         }
 
         putRow(data.outputRowMeta, r);
@@ -194,7 +124,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
     /**
      * Flush filter files
      */
-    public void flushFilter()
+    private void flushFilter()
     {
         logMinimal("Flush filters invoked");
 
@@ -217,13 +147,90 @@ public class FilterPlugin extends BaseStep implements StepInterface
     }
 
     /**
+     * Initialize filter
+     */
+    private void initFilter() throws KettleStepException, FilterException
+    {
+        Integer elements     = Integer.parseInt(meta.getElements());
+        Integer lookups      = Integer.parseInt(meta.getLookups());
+        Integer division     = Integer.parseInt(meta.getDivision());
+        Float probability    = Float.parseFloat(meta.getProbability());
+        ProviderType pType   = ProviderType.VFS;
+        FilterType   fType   = FilterType.MAP;
+        String hashFieldName = meta.getHash();
+        String timeFieldName = meta.getTime();
+        String uriStr        = meta.getUri();
+        URI uri              = null;
+
+        if (hashFieldName == null) {
+            throw new FilterException("Unable to retrieve hash field name");
+        }
+
+        if (timeFieldName == null) {
+            throw new FilterException("Unable to retrieve timestamp field name");
+        }
+
+        if (uriStr == null) {
+            throw new FilterException("Unable to retrieve filter uri");
+        }
+
+        if (FilterType.BLOOM.toString().equals(meta.getFilter())) {
+            fType = FilterType.BLOOM;
+        }
+
+        try {
+            uri = new URI(uriStr);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        FilterConfig config = FilterConfig.create()
+            .withFalsePositiveProbability(probability)
+            .withExpectedNumberOfElements(elements)
+            .withNumberOfLookups(lookups)
+            .withTimeDivision(division)
+            .withProvider(pType)
+            .withFilter(fType)
+            .withURI(uriStr);
+
+        filter = FilterFactory.createFilter(config);
+
+        logMinimal(getString("FilterPlugin.Uri.Label")          + " : " + config.getURI());
+        logMinimal(getString("FilterPlugin.FilterType.Label")   + " : " + config.getFilter());
+        logMinimal(getString("FilterPlugin.ProviderType.Label") + " : " + config.getProvider());
+
+        if (fType == FilterType.BLOOM) {
+            logMinimal(getString("FilterPlugin.Elements.Label")    + " : " + config.getExpectedNumberOfElements());
+            logMinimal(getString("FilterPlugin.Probability.Label") + " : " + String.format("%.3f%n", config.getFalsePositiveProbability()));
+        }
+
+        logMinimal(getString("FilterPlugin.Division.Label") + " : " + config.getTimeDivision());
+        logMinimal(getString("FilterPlugin.Lookups.Label") +  " : " + config.getNumberOfLookups());
+
+        // clone the input row structure and place it in our data object
+        data.outputRowMeta = (RowMetaInterface) getInputRowMeta().clone();
+        // use meta.getFields() to change it, so it reflects the output row structure
+        meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
+
+        // get field index
+        data.hashFieldIndex  = data.outputRowMeta.indexOfValue(hashFieldName);
+        data.timeFieldIndex  = data.outputRowMeta.indexOfValue(timeFieldName);
+
+        if (data.hashFieldIndex == null || data.hashFieldIndex < 0) {
+            throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
+        }
+
+        if (data.timeFieldIndex == null || data.hashFieldIndex < 0) {
+            throw new FilterException("Unable to retrieve time field : " + timeFieldName);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public void dispose(StepMetaInterface smi, StepDataInterface sdi)
     {
-        log.logDebug("dispose");
-
         meta = (FilterPluginMeta) smi;
         data = (FilterPluginData) sdi;
 

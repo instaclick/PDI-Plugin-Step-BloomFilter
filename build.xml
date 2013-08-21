@@ -31,8 +31,4 @@
             <arg value="-DskipTests=true" />
         </exec>
     </target>
-
-    <target name="compile-timestamp-partitioner" depends="deploy-ic-filter">
-        <jar destfile="timestamp-partitioner.jar" basedir="ic-filter/target/classes" includes="net/nationalfibre/TimestampPartitioner.class"/>
-    </target>
 </project>

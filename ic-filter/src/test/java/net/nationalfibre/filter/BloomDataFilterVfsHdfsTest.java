@@ -11,17 +11,15 @@ import org.pentaho.di.core.exception.KettleFileException;
 import org.pentaho.di.core.vfs.KettleVFS;
 
 @Ignore
-public class BloomDataFilterVfsHdfsTest extends BaseFilterTest
+public class BloomDataFilterVfsHdfsTest extends BaseBloomFilterTest
 {
     FileObject folder;
-    DataFilter filter;
     FilterProvider provider;
 
     public BloomDataFilterVfsHdfsTest() throws FileSystemException, KettleFileException
     {
         folder   = KettleVFS.getFileObject(getParameter("provider.uri.hdfs", "hdfs://bi-hadoopnamednode01.ss:8020/dev-bloomfilters"));
         provider = new VfsFilterProvider(folder.getURL().toString());
-        filter   = new BloomDataFilter(config, provider);
     }
 
     @Before
@@ -37,6 +35,6 @@ public class BloomDataFilterVfsHdfsTest extends BaseFilterTest
     @Override
     protected DataFilter getFilter()
     {
-        return filter;
+        return new BloomDataFilter(config, provider);
     }
 }
