@@ -10,7 +10,6 @@ import net.nationalfibre.filter.provider.FilterProvider;
 
 import com.skjegstad.utils.BloomFilter;
 import java.io.Serializable;
-import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  * Base filter implementation
