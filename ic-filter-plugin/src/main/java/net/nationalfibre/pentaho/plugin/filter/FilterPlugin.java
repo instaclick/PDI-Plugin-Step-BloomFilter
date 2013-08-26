@@ -21,6 +21,7 @@ import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 import static net.nationalfibre.pentaho.plugin.filter.Messages.getString;
+import org.pentaho.di.core.row.RowDataUtil;
 
 /**
  * Pentaho filter plugin
@@ -102,18 +103,28 @@ public class FilterPlugin extends BaseStep implements StepInterface
         data.hashValue  = String.valueOf(r[data.hashFieldIndex]);
         data.timeValue  = Long.parseLong(String.valueOf(r[data.timeFieldIndex]));
         data.filterData = new Data(data.hashValue, data.timeValue);
+        data.isUnique   = 1L;
 
         if ( ! filter.add(data.filterData)) {
 
             if (isDebug()) {
-                logDebug(getLinesRead() + " - Ignore row : " + data.hashValue);    
+                logDebug(getLinesRead() + " - Non unique row : " + data.hashValue);
             }
 
-            return true;
+            if ( ! data.isAlwaysPassRow) {
+                return true;
+            }
+
+            data.isUnique = 0L;
         }
 
         if (isDebug()) {
-            logDebug(getLinesRead() + " - Accept row : " + data.hashValue);    
+            logDebug(getLinesRead() + " - Unique row : " + data.hashValue);
+        }
+
+        if (data.isAlwaysPassRow) {
+            // safely add the unique field at the end of the output row
+            r = RowDataUtil.addValueData(r, data.outputRowMeta.size() - 1, data.isUnique);
         }
 
         putRow(data.outputRowMeta, r);
@@ -195,6 +206,24 @@ public class FilterPlugin extends BaseStep implements StepInterface
 
         filter = FilterFactory.createFilter(config);
 
+        // clone the input row structure and place it in our data object
+        data.outputRowMeta = (RowMetaInterface) getInputRowMeta().clone();
+        // use meta.getFields() to change it, so it reflects the output row structure
+        meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
+
+        // get field index
+        data.hashFieldIndex   = data.outputRowMeta.indexOfValue(hashFieldName);
+        data.timeFieldIndex   = data.outputRowMeta.indexOfValue(timeFieldName);
+        data.isAlwaysPassRow  = meta.isAlwaysPassRow() || true;
+
+        if (data.hashFieldIndex == null || data.hashFieldIndex < 0) {
+            throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
+        }
+
+        if (data.timeFieldIndex == null || data.hashFieldIndex < 0) {
+            throw new FilterException("Unable to retrieve time field : " + timeFieldName);
+        }
+
         logMinimal(getString("FilterPlugin.Uri.Label")          + " : " + config.getURI());
         logMinimal(getString("FilterPlugin.FilterType.Label")   + " : " + config.getFilter());
         logMinimal(getString("FilterPlugin.ProviderType.Label") + " : " + config.getProvider());
@@ -204,25 +233,9 @@ public class FilterPlugin extends BaseStep implements StepInterface
             logMinimal(getString("FilterPlugin.Probability.Label") + " : " + String.format("%.3f%n", config.getFalsePositiveProbability()));
         }
 
-        logMinimal(getString("FilterPlugin.Division.Label") + " : " + config.getTimeDivision());
-        logMinimal(getString("FilterPlugin.Lookups.Label") +  " : " + config.getNumberOfLookups());
-
-        // clone the input row structure and place it in our data object
-        data.outputRowMeta = (RowMetaInterface) getInputRowMeta().clone();
-        // use meta.getFields() to change it, so it reflects the output row structure
-        meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
-
-        // get field index
-        data.hashFieldIndex  = data.outputRowMeta.indexOfValue(hashFieldName);
-        data.timeFieldIndex  = data.outputRowMeta.indexOfValue(timeFieldName);
-
-        if (data.hashFieldIndex == null || data.hashFieldIndex < 0) {
-            throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
-        }
-
-        if (data.timeFieldIndex == null || data.hashFieldIndex < 0) {
-            throw new FilterException("Unable to retrieve time field : " + timeFieldName);
-        }
+        logMinimal(getString("FilterPlugin.AlwaysPassRow.Label") +  " : " + data.isAlwaysPassRow);
+        logMinimal(getString("FilterPlugin.Division.Label")      +  " : " + config.getTimeDivision());
+        logMinimal(getString("FilterPlugin.Lookups.Label")       +  " : " + config.getNumberOfLookups());
     }
 
     /**

@@ -42,6 +42,16 @@ public class FilterPluginData extends BaseStepData implements StepDataInterface
      */
     public Long timeValue = null;
 
+    /**
+     * Is unique
+     */
+    public Long isUnique = 0L;
+
+    /**
+     * Always Pass The Row
+     */
+    public boolean isAlwaysPassRow = false;
+
     public FilterPluginData()
     {
         super();
