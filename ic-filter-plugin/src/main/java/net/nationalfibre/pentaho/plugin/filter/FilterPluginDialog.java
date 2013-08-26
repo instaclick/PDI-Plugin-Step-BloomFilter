@@ -75,12 +75,23 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
     private FormData formFilterTypeLabel;
     private FormData formFilterTypeCombo;
 
+    private Label labelAlwaysPassRow;
+    private Button checkAlwaysPassRow;
+    private FormData formAlwaysPassLabel;
+    private FormData formAlwaysPassText;
+
+    private Label labelUniqueField;
+    private Text textUniqueField;
+    private FormData formUniqueFieldLabel;
+    private FormData formUniqueFieldText;
+
     private static String[] filterTypes = { FilterType.BLOOM.toString(), FilterType.MAP.toString() };
 
     private SelectionAdapter comboFilterTypeListener = new SelectionAdapter() {
-
         @Override
         public void widgetSelected(SelectionEvent e) {
+
+            input.setChanged();
 
             if (FilterType.BLOOM.toString().equals(comboFilterType.getText())) {
                 textProbability.setEnabled(true);
@@ -93,6 +104,23 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
             textElements.setEnabled(false); 
         }
     };
+
+    private SelectionAdapter checkAlwaysPassRowListener = new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+
+            input.setChanged();
+
+            if (checkAlwaysPassRow.getSelection()) {
+                textUniqueField.setEnabled(true);
+
+                return;
+            }
+
+            textUniqueField.setEnabled(false);
+        }
+    };
+
 
     public FilterPluginDialog(Shell parent, Object in, TransMeta transMeta, String sname)
     {
@@ -177,7 +205,54 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formFilterTypeCombo.top  = new FormAttachment(wStepname, margin);
         formFilterTypeCombo.right= new FormAttachment(100, 0);
 
-        comboFilterType.setLayoutData(formFilterTypeCombo);  
+        comboFilterType.setLayoutData(formFilterTypeCombo);
+
+        // Unique Field
+        labelAlwaysPassRow = new Label(shell, SWT.RIGHT);
+        labelAlwaysPassRow.setText(getString("FilterPlugin.AlwaysPassRow.Label"));
+        props.setLook(labelAlwaysPassRow);
+
+        formAlwaysPassLabel       = new FormData();
+        formAlwaysPassLabel.left  = new FormAttachment(0, 0);
+        formAlwaysPassLabel.right = new FormAttachment(middle, -margin);
+        formAlwaysPassLabel.top   = new FormAttachment(comboFilterType , margin);
+
+        labelAlwaysPassRow.setLayoutData(formAlwaysPassLabel);
+
+        checkAlwaysPassRow = new Button(shell, SWT.CHECK);
+        checkAlwaysPassRow.addSelectionListener(checkAlwaysPassRowListener);
+        props.setLook(checkAlwaysPassRow);
+
+        formAlwaysPassText        = new FormData();
+        formAlwaysPassText.left   = new FormAttachment(middle, 0);
+        formAlwaysPassText.right  = new FormAttachment(100, 0);
+        formAlwaysPassText.top    = new FormAttachment(comboFilterType, margin);
+
+        checkAlwaysPassRow.setLayoutData(formAlwaysPassText);
+
+         // UniqueField line
+        labelUniqueField = new Label(shell, SWT.RIGHT);
+        labelUniqueField.setText(getString("FilterPlugin.UniqueField.Label"));
+        props.setLook(labelUniqueField);
+
+        formUniqueFieldLabel       = new FormData();
+        formUniqueFieldLabel.left  = new FormAttachment(0, 0);
+        formUniqueFieldLabel.right = new FormAttachment(middle, -margin);
+        formUniqueFieldLabel.top   = new FormAttachment(checkAlwaysPassRow , margin);
+
+        labelUniqueField.setLayoutData(formUniqueFieldLabel);
+
+        textUniqueField = new Text(shell, SWT.MULTI | SWT.LEFT | SWT.BORDER);
+
+        props.setLook(textUniqueField);
+        textUniqueField.addModifyListener(lsMod);
+
+        formUniqueFieldText        = new FormData();
+        formUniqueFieldText.left   = new FormAttachment(middle, 0);
+        formUniqueFieldText.right  = new FormAttachment(100, 0);
+        formUniqueFieldText.top    = new FormAttachment(checkAlwaysPassRow, margin);
+
+        textUniqueField.setLayoutData(formUniqueFieldText);
 
         // hash line
         labelHash = new Label(shell, SWT.RIGHT);
@@ -187,11 +262,11 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formHashLabel       = new FormData();
         formHashLabel.left  = new FormAttachment(0, 0);
         formHashLabel.right = new FormAttachment(middle, -margin);
-        formHashLabel.top   = new FormAttachment(comboFilterType , margin);
+        formHashLabel.top   = new FormAttachment(labelUniqueField , margin);
 
         labelHash.setLayoutData(formHashLabel);
 
-        textHash = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+        textHash = new Text(shell, SWT.MULTI | SWT.LEFT | SWT.BORDER);
 
         props.setLook(textHash);
         textHash.addModifyListener(lsMod);
@@ -199,7 +274,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formHashText        = new FormData();
         formHashText.left   = new FormAttachment(middle, 0);
         formHashText.right  = new FormAttachment(100, 0);
-        formHashText.top    = new FormAttachment(comboFilterType, margin);
+        formHashText.top    = new FormAttachment(labelUniqueField, margin);
 
         textHash.setLayoutData(formHashText);
 
@@ -445,22 +520,37 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
             textProbability.setText(input.getProbability());
         }
 
+        checkAlwaysPassRow.setSelection(false);
+
+        if (input.isAlwaysPassRow()) {
+            checkAlwaysPassRow.setSelection(true);
+        }
+
+        if (input.getUniqueFieldName() != null) {
+            textUniqueField.setText(input.getUniqueFieldName());
+        }
+
         String filter = input.getFilter();
 
         if (filter == null || filter.length() < 1) {
             filter = FilterType.BLOOM.toString();
         }
 
+        setFilterType(filter);
+    }
+
+    private void setFilterType(String filter)
+    {
         if (FilterType.BLOOM.toString().equals(filter)) {
             textProbability.setEnabled(true);
-            textElements.setEnabled(true); 
+            textElements.setEnabled(true);
             comboFilterType.select(0);
 
             return;
         }
 
         textProbability.setEnabled(false);
-        textElements.setEnabled(false); 
+        textElements.setEnabled(false);
         comboFilterType.select(1);
     }
 
@@ -484,6 +574,8 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         input.setDivision(textDivision.getText());
         input.setElements(textElements.getText());
         input.setProbability(textProbability.getText());
+        input.setUniqueFieldName(textUniqueField.getText());
+        input.setAlwaysPassRow(checkAlwaysPassRow.getSelection());
 
         dispose();
     }

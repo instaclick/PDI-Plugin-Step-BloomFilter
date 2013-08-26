@@ -52,7 +52,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     private String probability;
     private String uri;
     private String uniqueFieldName;
-    private boolean alwaysPassRow = true;
+    private boolean alwaysPassRow;
     private String division;
     private String lookups;
     private String hash;
@@ -92,8 +92,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     @Override
     public void getFields(RowMetaInterface inputRowMeta, String name, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) throws KettleStepException
     {
-        //@TODO - Fix
-        if ( ! isAlwaysPassRow() && false) {
+        if ( ! isAlwaysPassRow()) {
             return;
         }
 
@@ -244,7 +243,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         this.probability = "0.1";
 
         this.uniqueFieldName = "is_unique";
-        this.alwaysPassRow   = true;
+        this.alwaysPassRow   = false;
 
         this.uri        = "tmp://ic-filter/";
         this.division   = "60";
@@ -350,7 +349,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
 
     public void setAlwaysPassRow(String alwaysGiveRow)
     {
-        this.alwaysPassRow = Boolean.TRUE.toString().equals(alwaysGiveRow);
+        this.alwaysPassRow = Boolean.TRUE.toString().equals(alwaysGiveRow) || "Y".equals(alwaysGiveRow);
     }
 
     public void setAlwaysPassRow(boolean alwaysGiveRow)

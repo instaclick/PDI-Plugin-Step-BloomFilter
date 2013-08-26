@@ -214,7 +214,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
         // get field index
         data.hashFieldIndex   = data.outputRowMeta.indexOfValue(hashFieldName);
         data.timeFieldIndex   = data.outputRowMeta.indexOfValue(timeFieldName);
-        data.isAlwaysPassRow  = meta.isAlwaysPassRow() || true;
+        data.isAlwaysPassRow  = meta.isAlwaysPassRow();
 
         if (data.hashFieldIndex == null || data.hashFieldIndex < 0) {
             throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
