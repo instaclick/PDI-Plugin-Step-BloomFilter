@@ -11,8 +11,6 @@ import org.apache.commons.vfs.FileObject;
 import org.pentaho.di.core.exception.KettleFileException;
 import org.pentaho.di.core.vfs.KettleVFS;
 
-import com.skjegstad.utils.BloomFilter;
-
 /**
  * KettleVFS provider
  *

@@ -10,7 +10,7 @@
    <libraries>
     <library name="ic-filter-plugin.jar"/>
     <library name="lib/ic-filter.jar"/>
-    <library name="lib/bloomfilter.jar"/>
+    <library name="lib/guava.jar"/>
     <library name="lib/commons-configuration.jar"/>
     <library name="lib/hadoop-common.jar"/>
     <library name="lib/hadoop-auth.jar"/>

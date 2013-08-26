@@ -5,8 +5,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.skjegstad.utils.BloomFilter;
-
 /**
  * In memory provider, valid only for test proposes
  *

@@ -8,7 +8,6 @@ import java.util.Set;
 
 import net.nationalfibre.filter.provider.FilterProvider;
 
-import com.skjegstad.utils.BloomFilter;
 import java.io.Serializable;
 
 /**

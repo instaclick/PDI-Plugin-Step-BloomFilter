@@ -1,6 +1,8 @@
 package net.nationalfibre.filter;
 
-import com.skjegstad.utils.BloomFilter;
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnel;
+import com.google.common.hash.PrimitiveSink;
 import net.nationalfibre.filter.provider.FilterProvider;
 
 /**
@@ -34,8 +36,9 @@ public class BloomDataFilter extends BaseDataFilter<BloomFilter>
     {
         double falsePositiveProbability = config.getFalsePositiveProbability();
         int expectedNumberOfElements    = config.getExpectedNumberOfElements();
+        BloomFilter<String> filter      = BloomFilter.create(StringHashFunnel.INSTANCE, expectedNumberOfElements, falsePositiveProbability);
 
-        return new BloomFilter<String>(falsePositiveProbability, expectedNumberOfElements);
+        return filter;
     }
 
     /**
@@ -43,7 +46,7 @@ public class BloomDataFilter extends BaseDataFilter<BloomFilter>
      */
     protected boolean filterContains(BloomFilter filter, String hash)
     {
-        return filter.contains(hash);
+        return filter.mightContain(hash);
     }
 
     /**
@@ -51,6 +54,15 @@ public class BloomDataFilter extends BaseDataFilter<BloomFilter>
      */
     protected void filterAdd(BloomFilter filter, String hash)
     {
-        filter.add(hash);
+        filter.put(hash);
+    }
+}
+
+enum StringHashFunnel implements Funnel<String>
+{
+    INSTANCE;
+    public void funnel(String hash, PrimitiveSink into)
+    {
+        into.putString(hash);
     }
 }

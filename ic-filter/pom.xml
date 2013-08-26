@@ -3,16 +3,15 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.nationalfibre</groupId>
     <artifactId>ic-filter</artifactId>
-    <version>1.1.4-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>ic-filter</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <commons-vfs.version>2.0-20090205</commons-vfs.version>
-        <java-bloomfilter.version>1.0</java-bloomfilter.version>
         <hadoop.version>2.0.0-cdh4.1.1</hadoop.version>
         <kettle.version>4.1.4-SNAPSHOT</kettle.version>
-        <guava.version>r09</guava.version>
+        <guava.version>14.0.1</guava.version>
         <skipTests>false</skipTests>
     </properties>
     <dependencies>
@@ -26,12 +25,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.skjegstad</groupId>
-            <artifactId>java-bloomfilter</artifactId>
-            <version>${java-bloomfilter.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-vfs</groupId>
@@ -67,16 +60,6 @@
             <url>file:${project.basedir}/repo</url>
         </repository>
         <repository>
-            <id>repository.pentaho.org</id>
-            <name>repository.pentaho.org</name>
-            <url>http://repository.pentaho.org/artifactory/pentaho</url>
-        </repository>
-        <repository>
-            <id>thirdparty.repository.pentaho.org</id>
-            <name>thirdparty.pentaho.org</name>
-            <url>http://repository.pentaho.org/artifactory/third-party</url>
-        </repository>
-        <repository>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -99,6 +82,16 @@
             <releases>
                 <enabled>true</enabled>
             </releases>
+        </repository>
+        <repository>
+            <id>repository.pentaho.org</id>
+            <name>repository.pentaho.org</name>
+            <url>http://repository.pentaho.org/artifactory/pentaho</url>
+        </repository>
+        <repository>
+            <id>thirdparty.repository.pentaho.org</id>
+            <name>thirdparty.pentaho.org</name>
+            <url>http://repository.pentaho.org/artifactory/third-party</url>
         </repository>
     </repositories>
     <build>
