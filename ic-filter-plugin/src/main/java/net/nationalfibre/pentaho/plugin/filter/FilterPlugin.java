@@ -145,6 +145,9 @@ public class FilterPlugin extends BaseStep implements StepInterface
             data.isUnique = 0L;
         }
 
+        //Add unique counter
+        data.uniqueCount += data.isUnique;
+
         if (isDebug()) {
             logDebug(getLinesRead() + " - Unique row : " + data.hashValue);
         }
@@ -154,7 +157,13 @@ public class FilterPlugin extends BaseStep implements StepInterface
             r = RowDataUtil.addValueData(r, data.outputRowMeta.size() - 1, data.isUnique);
         }
 
+        // put the row to the output row stream
         putRow(data.outputRowMeta, r);
+
+        // log progress
+        if (checkFeedback(getLinesRead())) {
+            logBasic(String.format("linenr %s - unique %s", getLinesRead(), data.uniqueCount));
+        }
 
         return true;
     }
@@ -249,6 +258,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
         data.timeFieldIndex   = data.outputRowMeta.indexOfValue(timeFieldName);
         data.isAlwaysPassRow  = meta.isAlwaysPassRow();
         data.isTransactional  = meta.isTransactional();
+        data.uniqueCount      = 0L;
 
         if (data.hashFieldIndex == null || data.hashFieldIndex < 0) {
             throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
@@ -273,7 +283,9 @@ public class FilterPlugin extends BaseStep implements StepInterface
         logMinimal(getString("FilterPlugin.Division.Label")      +  " : " + config.getTimeDivision());
         logMinimal(getString("FilterPlugin.Lookups.Label")       +  " : " + config.getNumberOfLookups());
 
-        getTrans().addTransListener(transListener);
+        if (data.isTransactional) {
+            getTrans().addTransListener(transListener);
+        }
     }
 
     /**
