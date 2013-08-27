@@ -43,6 +43,11 @@ public class FilterConfig
     private ProviderType provider = ProviderType.VFS;
 
     /**
+     * Provider type
+     */
+    private HashFunctionType hashFunctionType = HashFunctionType.NONE;
+
+    /**
      * Gets {@link expectedNumberOfElements}
      * @return
      */
@@ -174,6 +179,26 @@ public class FilterConfig
     public FilterConfig withProvider(ProviderType provider)
     {
         this.provider = provider;
+
+        return this;
+    }
+
+    /**
+     * Gets {@link hashFunctionType}
+     * @return
+     */
+    public HashFunctionType getHashFunctionType()
+    {
+        return hashFunctionType;
+    }
+
+    /**
+     * Sets {@link hashFunctionType}
+     * @return
+     */
+    public FilterConfig withHashFunctionType(HashFunctionType hashType)
+    {
+        this.hashFunctionType = hashType;
 
         return this;
     }

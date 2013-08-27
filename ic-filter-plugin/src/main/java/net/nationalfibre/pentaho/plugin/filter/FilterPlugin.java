@@ -9,6 +9,7 @@ import net.nationalfibre.filter.FilterConfig;
 import net.nationalfibre.filter.FilterFactory;
 import net.nationalfibre.filter.ProviderType;
 import net.nationalfibre.filter.FilterType;
+import net.nationalfibre.filter.HashFunctionType;
 
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
@@ -21,6 +22,7 @@ import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 import static net.nationalfibre.pentaho.plugin.filter.Messages.getString;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.trans.TransListener;
 
@@ -59,8 +61,6 @@ public class FilterPlugin extends BaseStep implements StepInterface
             if ( ! data.isTransactional) {
                 return;
             }
-
-            logMinimal("Trans finished invoked");
 
             if (trans.getErrors() > 0) {
                 logMinimal(String.format("Transformation failure, ignoring filter changes", trans.getErrors()));
@@ -189,16 +189,17 @@ public class FilterPlugin extends BaseStep implements StepInterface
      */
     private void initFilter() throws KettleStepException, FilterException
     {
-        Integer elements     = Integer.parseInt(meta.getElements());
-        Integer lookups      = Integer.parseInt(meta.getLookups());
-        Integer division     = Integer.parseInt(meta.getDivision());
-        Float probability    = Float.parseFloat(meta.getProbability());
-        ProviderType pType   = ProviderType.VFS;
-        FilterType   fType   = FilterType.MAP;
-        String hashFieldName = meta.getHash();
-        String timeFieldName = meta.getTime();
-        String uriStr        = meta.getUri();
-        URI uri              = null;
+        Integer elements        = Integer.parseInt(meta.getElements());
+        Integer lookups         = Integer.parseInt(meta.getLookups());
+        Integer division        = Integer.parseInt(meta.getDivision());
+        Float probability       = Float.parseFloat(meta.getProbability());
+        HashFunctionType hType  = HashFunctionType.NONE;
+        ProviderType pType      = ProviderType.VFS;
+        FilterType   fType      = FilterType.MAP;
+        String hashFieldName    = meta.getHash();
+        String timeFieldName    = meta.getTime();
+        String uriStr           = meta.getUri();
+        URI uri                 = null;
 
         if (hashFieldName == null) {
             throw new FilterException("Unable to retrieve hash field name");
@@ -216,6 +217,10 @@ public class FilterPlugin extends BaseStep implements StepInterface
             fType = FilterType.BLOOM;
         }
 
+        if ( ! Const.isEmpty(meta.getHashFunction())) {
+            hType = HashFunctionType.valueOf(meta.getHashFunction().trim());
+        }
+
         try {
             uri = new URI(uriStr);
         } catch (URISyntaxException e) {
@@ -226,6 +231,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
             .withFalsePositiveProbability(probability)
             .withExpectedNumberOfElements(elements)
             .withNumberOfLookups(lookups)
+            .withHashFunctionType(hType)
             .withTimeDivision(division)
             .withProvider(pType)
             .withFilter(fType)
@@ -255,6 +261,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
         logMinimal(getString("FilterPlugin.Uri.Label")          + " : " + config.getURI());
         logMinimal(getString("FilterPlugin.FilterType.Label")   + " : " + config.getFilter());
         logMinimal(getString("FilterPlugin.ProviderType.Label") + " : " + config.getProvider());
+        logMinimal(getString("FilterPlugin.HashFunction.Label") + " : " + config.getHashFunctionType());
 
         if (fType == FilterType.BLOOM) {
             logMinimal(getString("FilterPlugin.Elements.Label")    + " : " + config.getExpectedNumberOfElements());

@@ -1,5 +1,6 @@
 package net.nationalfibre.filter;
 
+import com.google.common.hash.Hashing;
 import java.io.IOException;
 
 import net.nationalfibre.filter.provider.FilterProvider;
@@ -47,6 +48,6 @@ public class BloomDataFilterHdfsTest extends BaseBloomFilterTest
     @Override
     protected DataFilter getFilter()
     {
-        return new BloomDataFilter(config, provider);
+        return new BloomDataFilter(config, provider, Hashing.murmur3_128());
     }
 }

@@ -1,5 +1,6 @@
 package net.nationalfibre.filter;
 
+import com.google.common.hash.HashFunction;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,14 +9,12 @@ import java.util.Set;
 
 import net.nationalfibre.filter.provider.FilterProvider;
 
-import java.io.Serializable;
-
 /**
  * Base filter implementation
  *
  * @author Fabio B. Silva <fabios@nationalfibre.net>
  */
-abstract class BaseDataFilter <T extends Serializable> implements DataFilter
+abstract class BaseDataFilter implements DataFilter
 {
     /**
      * Filter configuration
@@ -38,21 +37,28 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
     protected Map<Integer, Boolean> containsFilters;
 
     /**
-     * Map of {@link com.skjegstad.utils.BloomFilter}
+     * Map of {@link FilterAdapter}
      */
-    protected Map<String, T> filters;
+    protected Map<String, FilterAdapter> filters;
+
+    /**
+     * HashFunction
+     */
+    protected HashFunction hashFunction;
 
     /**
      * @param config            Filter configuration
      * @param filterProvider    Filter provider
+     * @param hashFunction      Hash function
      */
-    public BaseDataFilter(FilterConfig config, FilterProvider filterProvider)
+    public BaseDataFilter(FilterConfig config, FilterProvider filterProvider, HashFunction hashFunction)
     {
         this.config          = config;
+        this.hashFunction    = hashFunction;
         this.filterProvider  = filterProvider;
         this.dirtyFilters    = new HashSet<String>();
+        this.filters         = new HashMap<String, FilterAdapter>();
         this.containsFilters = new HashMap<Integer, Boolean>();
-        this.filters         = new HashMap<String, T>();
     }
 
     /**
@@ -60,26 +66,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
      *
      * @return
      */
-    protected abstract T createFilter();
-
-    /**
-     * Check if the filter contains the given hash
-     *
-     * @param filter
-     * @param hash
-     * @return
-     */
-    protected abstract boolean filterContains(T filter, String hash);
-
-    /**
-     * Add a new hash to the given filter
-     * 
-     * @param filter
-     * @param hash
-     * 
-     * @return
-     */
-    protected abstract void filterAdd(T filter, String hash);
+    protected abstract FilterAdapter createFilter();
 
     /**
      * Creates a filter name base on a integer hash code
@@ -90,13 +77,29 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
     protected abstract String createFilterName(int dataHash);
 
     /**
+     * Hashes the string if the HashFunction is available
+     *
+     * @param data
+     *
+     * @return
+     */
+    private String hashString(String hash)
+    {
+        if (hashFunction != null) {
+            return hashFunction.hashString(hash).toString();
+        }
+
+        return hash;
+    }
+
+    /**
      * Creates an integer hash for the given {@link Data}
      *
      * @param data
      * 
      * @return
      */
-    private int getDataHashCode(Data data)
+    private int hashCodeFilterName(Data data)
     {
         double division = config.getTimeDivision();
         Long timestamp  = data.getTimestamp();
@@ -112,7 +115,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
      */
     private String getFilterName(Data data)
     {
-        return createFilterName(getDataHashCode(data));
+        return createFilterName(hashCodeFilterName(data));
     }
 
     /**
@@ -160,7 +163,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
      */
     private boolean hasProviderFilter(Data data)
     {
-        return hasProviderFilter(getDataHashCode(data));
+        return hasProviderFilter(hashCodeFilterName(data));
     }
 
     /**
@@ -169,7 +172,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
      * @param dataHash
      * @return
      */
-    protected T loadFilter(int dataHash)
+    protected FilterAdapter loadFilter(int dataHash)
     {
         String name = createFilterName(dataHash);
 
@@ -178,7 +181,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
         }
 
         try {
-            T filter = (T) filterProvider.loadFilter(name);
+            FilterAdapter filter = (FilterAdapter) filterProvider.loadFilter(name);
 
             filters.put(name, filter);
 
@@ -195,9 +198,9 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
      * @param data
      * @return
      */
-    private T loadFilter(Data data)
+    private FilterAdapter loadFilter(Data data)
     {
-        return loadFilter(getDataHashCode(data));
+        return loadFilter(hashCodeFilterName(data));
     }
 
     /**
@@ -206,7 +209,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
      * @param data
      * @return
      */
-    private T loadOrCreateFilter(Data data)
+    private FilterAdapter loadOrCreateFilter(Data data)
     {
         String name = getFilterName(data);
 
@@ -233,8 +236,8 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
     private boolean memoryContains(Data data)
     {
         int lookups = config.getNumberOfLookups();
-        int code    = getDataHashCode(data);
-        String hash = data.getHash();
+        int code    = hashCodeFilterName(data);
+        String hash = hashString(data.getHash());
 
         for (int i = 0; i <= lookups; i++) {
             int current = code - i;
@@ -244,7 +247,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
                 continue;
             }
 
-            if (filterContains(filters.get(name), hash)) {
+            if (filters.get(name).contains(hash)) {
                 return true;
             }
         }
@@ -261,8 +264,8 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
     private boolean providerContains(Data data)
     {
         int lookups = config.getNumberOfLookups();
-        int code    = getDataHashCode(data);
-        String hash = data.getHash();
+        int code    = hashCodeFilterName(data);
+        String hash = hashString(data.getHash());
 
         for (int i = 0; i <= lookups; i++) {
             int current = code - i;
@@ -271,7 +274,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
                 continue;
             }
 
-            if (filterContains(loadFilter(current), hash)) {
+            if (loadFilter(current).contains(hash)) {
                 return true;
             }
         }
@@ -288,10 +291,10 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
             return false;
         }
 
-        T filter    = loadOrCreateFilter(data);
-        String hash = data.getHash();
+        FilterAdapter filter    = loadOrCreateFilter(data);
+        String hash             = hashString(data.getHash());
 
-        filterAdd(filter, hash);
+        filter.add(hash);
         markAsDirty(getFilterName(data));
 
         return true;

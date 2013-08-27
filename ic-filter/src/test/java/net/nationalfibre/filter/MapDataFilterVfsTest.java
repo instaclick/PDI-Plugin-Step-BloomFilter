@@ -1,5 +1,6 @@
 package net.nationalfibre.filter;
 
+import com.google.common.hash.Hashing;
 import net.nationalfibre.filter.provider.FilterProvider;
 import net.nationalfibre.filter.provider.VfsFilterProvider;
 
@@ -33,6 +34,6 @@ public class MapDataFilterVfsTest extends BaseFilterTest
     @Override
     protected DataFilter getFilter()
     {
-        return new MapDataFilter(config, provider);
+        return new MapDataFilter(config, provider, Hashing.murmur3_128());
     }
 }

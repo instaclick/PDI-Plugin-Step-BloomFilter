@@ -1,6 +1,7 @@
 package net.nationalfibre.pentaho.plugin.filter;
 
 import net.nationalfibre.filter.FilterType;
+import net.nationalfibre.filter.HashFunctionType;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -75,6 +76,11 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
     private FormData formFilterTypeLabel;
     private FormData formFilterTypeCombo;
 
+    private Label    labelHashFunction;
+    private CCombo   comboHashFunction;
+    private FormData formHashFunctionLabel;
+    private FormData formHashFunctionCombo;
+
     private Label labelAlwaysPassRow;
     private Button checkAlwaysPassRow;
     private FormData formAlwaysPassRowLabel;
@@ -91,6 +97,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
     private FormData formTransactionalText;
 
     private static String[] filterTypes = { FilterType.BLOOM.toString(), FilterType.MAP.toString() };
+    private static String[] hashFunctionTypes = HashFunctionType.getHashFunctionNames();
 
     private ModifyListener modifyListener = new ModifyListener() {
         @Override
@@ -189,7 +196,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         wStepname.setLayoutData(fdStepname);
 
-         // Filter Type
+        // Filter Type
         labelFilterType=new Label(shell, SWT.RIGHT);
         labelFilterType.setText(getString("FilterPlugin.FilterType.Label"));
         props.setLook(labelFilterType);
@@ -239,6 +246,32 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         checkTransactional.setLayoutData(formTransactionalText);
 
+        // Hash Function
+        labelHashFunction=new Label(shell, SWT.RIGHT);
+        labelHashFunction.setText(getString("FilterPlugin.HashFunction.Label"));
+        props.setLook(labelHashFunction);
+
+        formHashFunctionLabel       = new FormData();
+        formHashFunctionLabel.left  = new FormAttachment(0, 0);
+        formHashFunctionLabel.top   = new FormAttachment(checkTransactional, margin);
+        formHashFunctionLabel.right = new FormAttachment(middle, 0);
+
+        labelHashFunction.setLayoutData(formHashFunctionLabel);
+
+        comboHashFunction = new CCombo(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER | SWT.READ_ONLY);
+
+        comboHashFunction.setToolTipText(getString("FilterPlugin.HashFunction.Label"));
+        comboHashFunction.setItems(HashFunctionType.getHashFunctionNames());
+        comboHashFunction.addModifyListener(modifyListener);
+        props.setLook(comboHashFunction);
+        
+        formHashFunctionCombo      = new FormData();
+        formHashFunctionCombo.left = new FormAttachment(middle, margin);
+        formHashFunctionCombo.top  = new FormAttachment(checkTransactional, margin);
+        formHashFunctionCombo.right= new FormAttachment(100, 0);
+
+        comboHashFunction.setLayoutData(formHashFunctionCombo);
+
         // Unique Field
         labelAlwaysPassRow = new Label(shell, SWT.RIGHT);
         labelAlwaysPassRow.setText(getString("FilterPlugin.AlwaysPassRow.Label"));
@@ -247,7 +280,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formAlwaysPassRowLabel       = new FormData();
         formAlwaysPassRowLabel.left  = new FormAttachment(0, 0);
         formAlwaysPassRowLabel.right = new FormAttachment(middle, -margin);
-        formAlwaysPassRowLabel.top   = new FormAttachment(checkTransactional, margin);
+        formAlwaysPassRowLabel.top   = new FormAttachment(comboHashFunction, margin);
 
         labelAlwaysPassRow.setLayoutData(formAlwaysPassRowLabel);
 
@@ -259,7 +292,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formAlwaysPassRowText        = new FormData();
         formAlwaysPassRowText.left   = new FormAttachment(middle, 0);
         formAlwaysPassRowText.right  = new FormAttachment(100, 0);
-        formAlwaysPassRowText.top    = new FormAttachment(checkTransactional, margin);
+        formAlwaysPassRowText.top    = new FormAttachment(comboHashFunction, margin);
 
         checkAlwaysPassRow.setLayoutData(formAlwaysPassRowText);
 
@@ -499,6 +532,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         // Detect X or ALT-F4 or something that kills this window...
         shell.addShellListener(new ShellAdapter() {
+            @Override
             public void shellClosed(ShellEvent e) {
                 cancel();
             }
@@ -553,11 +587,17 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
             textProbability.setText(input.getProbability());
         }
 
+        if (input.getHashFunction() != null) {
+            comboHashFunction.setText(input.getHashFunction());
+        }
+
         checkAlwaysPassRow.setSelection(false);
         checkTransactional.setSelection(false);
+        textUniqueField.setEnabled(false);
 
         if (input.isAlwaysPassRow()) {
             checkAlwaysPassRow.setSelection(true);
+            textUniqueField.setEnabled(true);
         }
 
         if (input.isTransactional()) {
@@ -612,6 +652,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         input.setDivision(textDivision.getText());
         input.setElements(textElements.getText());
         input.setProbability(textProbability.getText());
+        input.setHashFunction(comboHashFunction.getText());
         input.setUniqueFieldName(textUniqueField.getText());
         input.setAlwaysPassRow(checkAlwaysPassRow.getSelection());
         input.setTransactional(checkTransactional.getSelection());

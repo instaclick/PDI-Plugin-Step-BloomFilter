@@ -16,7 +16,7 @@
         <guava.version>14.0.1</guava.version>
         <commons-configuration.version>1.6</commons-configuration.version>
         <commons-vfs.version>2.0-20090205</commons-vfs.version>
-        <ic-filter.version>1.2.0-SNAPSHOT</ic-filter.version>
+        <ic-filter.version>1.4.0-SNAPSHOT</ic-filter.version>
         <skipTests>false</skipTests>
     </properties>
     <dependencies>

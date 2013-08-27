@@ -2,6 +2,7 @@ package net.nationalfibre.filter;
 
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnel;
+import com.google.common.hash.HashFunction;
 import com.google.common.hash.PrimitiveSink;
 import net.nationalfibre.filter.provider.FilterProvider;
 
@@ -10,7 +11,7 @@ import net.nationalfibre.filter.provider.FilterProvider;
  *
  * @author Fabio B. Silva <fabios@nationalfibre.net>
  */
-public class BloomDataFilter extends BaseDataFilter<BloomFilter>
+public class BloomDataFilter extends BaseDataFilter
 {
     /**
      * @param config            Filter configuration
@@ -18,7 +19,17 @@ public class BloomDataFilter extends BaseDataFilter<BloomFilter>
      */
     public BloomDataFilter(FilterConfig config, FilterProvider filterProvider)
     {
-        super(config, filterProvider);
+        super(config, filterProvider, null);
+    }
+
+    /**
+     * @param config            Filter configuration
+     * @param filterProvider    Filter provider
+     * @param hashFunction      Hash function
+     */
+    public BloomDataFilter(FilterConfig config, FilterProvider filterProvider, HashFunction hashFunction)
+    {
+        super(config, filterProvider, hashFunction);
     }
 
     /**
@@ -32,29 +43,13 @@ public class BloomDataFilter extends BaseDataFilter<BloomFilter>
     /**
      * {@inheritDoc}
      */
-    protected BloomFilter createFilter()
+    protected FilterAdapter createFilter()
     {
         double falsePositiveProbability = config.getFalsePositiveProbability();
         int expectedNumberOfElements    = config.getExpectedNumberOfElements();
         BloomFilter<String> filter      = BloomFilter.create(StringHashFunnel.INSTANCE, expectedNumberOfElements, falsePositiveProbability);
 
-        return filter;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected boolean filterContains(BloomFilter filter, String hash)
-    {
-        return filter.mightContain(hash);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected void filterAdd(BloomFilter filter, String hash)
-    {
-        filter.put(hash);
+        return new BloomFilterAdapter(filter);
     }
 }
 
@@ -64,5 +59,25 @@ enum StringHashFunnel implements Funnel<String>
     public void funnel(String hash, PrimitiveSink into)
     {
         into.putString(hash);
+    }
+}
+
+class BloomFilterAdapter implements FilterAdapter
+{
+    private BloomFilter<String> filter;
+
+    public BloomFilterAdapter(BloomFilter<String> filter)
+    {
+        this.filter = filter;
+    }
+
+    public void add(String hash)
+    {
+        filter.put(hash);
+    }
+
+    public boolean contains(String hash)
+    {
+        return filter.mightContain(hash);
     }
 }
