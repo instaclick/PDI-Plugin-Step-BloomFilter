@@ -22,6 +22,7 @@ import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 import static net.nationalfibre.pentaho.plugin.filter.Messages.getString;
 import org.pentaho.di.core.row.RowDataUtil;
+import org.pentaho.di.trans.TransListener;
 
 /**
  * Pentaho filter plugin
@@ -44,6 +45,32 @@ public class FilterPlugin extends BaseStep implements StepInterface
      * Data filter
      */
     private DataFilter filter;
+
+    /**
+     * Transformation Listener
+     */
+    private TransListener transListener = new TransListener() {
+        /**
+        * {@inheritDoc}
+        */
+        @Override
+        public void transFinished(Trans trans) throws KettleException
+        {
+            if ( ! data.isTransactional) {
+                return;
+            }
+
+            logMinimal("Trans finished invoked");
+
+            if (trans.getErrors() > 0) {
+                logMinimal(String.format("Transformation failure, ignoring filter changes", trans.getErrors()));
+
+                return;
+            }
+
+            flushFilter();
+        }
+    };
 
     /**
      * {@inheritDoc}
@@ -215,6 +242,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
         data.hashFieldIndex   = data.outputRowMeta.indexOfValue(hashFieldName);
         data.timeFieldIndex   = data.outputRowMeta.indexOfValue(timeFieldName);
         data.isAlwaysPassRow  = meta.isAlwaysPassRow();
+        data.isTransactional  = meta.isTransactional();
 
         if (data.hashFieldIndex == null || data.hashFieldIndex < 0) {
             throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
@@ -233,9 +261,12 @@ public class FilterPlugin extends BaseStep implements StepInterface
             logMinimal(getString("FilterPlugin.Probability.Label") + " : " + String.format("%.3f%n", config.getFalsePositiveProbability()));
         }
 
+        logMinimal(getString("FilterPlugin.Transactional.Label") +  " : " + data.isTransactional);
         logMinimal(getString("FilterPlugin.AlwaysPassRow.Label") +  " : " + data.isAlwaysPassRow);
         logMinimal(getString("FilterPlugin.Division.Label")      +  " : " + config.getTimeDivision());
         logMinimal(getString("FilterPlugin.Lookups.Label")       +  " : " + config.getNumberOfLookups());
+
+        getTrans().addTransListener(transListener);
     }
 
     /**
@@ -247,7 +278,9 @@ public class FilterPlugin extends BaseStep implements StepInterface
         meta = (FilterPluginMeta) smi;
         data = (FilterPluginData) sdi;
 
-        flushFilter();
+        if ( ! data.isTransactional) {
+            flushFilter();
+        }
 
         super.dispose(smi, sdi);
     }

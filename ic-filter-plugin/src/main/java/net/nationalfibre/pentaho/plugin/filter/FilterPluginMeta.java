@@ -40,6 +40,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     private static String FIELD_UNIQUE_FIELD_NAME   = "unique_field_name";
     private static String FIELD_ALWAYS_PASS_ROW     = "always_pass_row";
     private static String FIELD_PROBABLILITY        = "probability";
+    private static String FIELD_TRANSACTIONAL       = "transactional";
     private static String FIELD_ELEMENTS            = "elements";
     private static String FIELD_LOOKUPS             = "lookups";
     private static String FIELD_DIVISION            = "division";
@@ -53,6 +54,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     private String uri;
     private String uniqueFieldName;
     private boolean alwaysPassRow;
+    private boolean transactional;
     private String division;
     private String lookups;
     private String hash;
@@ -149,6 +151,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
 
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_UNIQUE_FIELD_NAME, getUniqueFieldName()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_ALWAYS_PASS_ROW, isAlwaysPassRow()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_TRANSACTIONAL, isTransactional()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_PROBABLILITY, getProbability()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_ELEMENTS, getElements()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_DIVISION, getDivision()));
@@ -170,6 +173,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         try {
             setUniqueFieldName(XMLHandler.getTagValue(stepnode, FIELD_UNIQUE_FIELD_NAME));
             setAlwaysPassRow(XMLHandler.getTagValue(stepnode, FIELD_ALWAYS_PASS_ROW));
+            setTransactional(XMLHandler.getTagValue(stepnode, FIELD_TRANSACTIONAL));
             setProbability(XMLHandler.getTagValue(stepnode, FIELD_PROBABLILITY));
             setElements(XMLHandler.getTagValue(stepnode, FIELD_ELEMENTS));
             setDivision(XMLHandler.getTagValue(stepnode, FIELD_DIVISION));
@@ -194,6 +198,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
 
             setUniqueFieldName(rep.getStepAttributeString(idStep, FIELD_UNIQUE_FIELD_NAME));
             setAlwaysPassRow(rep.getStepAttributeBoolean(idStep, FIELD_ALWAYS_PASS_ROW));
+            setTransactional(rep.getStepAttributeString(idStep, FIELD_TRANSACTIONAL));
             setProbability(rep.getStepAttributeString(idStep, FIELD_PROBABLILITY));
             setElements(rep.getStepAttributeString(idStep, FIELD_ELEMENTS));
             setDivision(rep.getStepAttributeString(idStep, FIELD_DIVISION));
@@ -219,6 +224,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         try {
             rep.saveStepAttribute(idTransformation, idStep, FIELD_UNIQUE_FIELD_NAME, getUniqueFieldName());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_ALWAYS_PASS_ROW, isAlwaysPassRow());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_TRANSACTIONAL, isTransactional());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_PROBABLILITY, getProbability());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_ELEMENTS, getElements());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_DIVISION, getDivision());
@@ -243,6 +249,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         this.probability = "0.1";
 
         this.uniqueFieldName = "is_unique";
+        this.transactional   = false;
         this.alwaysPassRow   = false;
 
         this.uri        = "tmp://ic-filter/";
@@ -340,6 +347,21 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     public void setTime(String timeFieldName)
     {
         this.time = timeFieldName;
+    }
+
+    public boolean isTransactional()
+    {
+        return transactional;
+    }
+
+    public void setTransactional(String transactional)
+    {
+        this.transactional = Boolean.TRUE.toString().equals(transactional) || "Y".equals(transactional);
+    }
+
+    public void setTransactional(boolean transactional)
+    {
+        this.transactional = transactional;
     }
 
     public boolean isAlwaysPassRow()

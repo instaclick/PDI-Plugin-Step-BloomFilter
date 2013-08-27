@@ -52,6 +52,11 @@ public class FilterPluginData extends BaseStepData implements StepDataInterface
      */
     public boolean isAlwaysPassRow = false;
 
+    /**
+     * The Step is transactional
+     */
+    public boolean isTransactional = false;
+
     public FilterPluginData()
     {
         super();

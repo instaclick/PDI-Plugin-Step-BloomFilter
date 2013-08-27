@@ -77,21 +77,38 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
     private Label labelAlwaysPassRow;
     private Button checkAlwaysPassRow;
-    private FormData formAlwaysPassLabel;
-    private FormData formAlwaysPassText;
+    private FormData formAlwaysPassRowLabel;
+    private FormData formAlwaysPassRowText;
 
     private Label labelUniqueField;
     private Text textUniqueField;
     private FormData formUniqueFieldLabel;
     private FormData formUniqueFieldText;
 
+    private Label labelTransactional;
+    private Button checkTransactional;
+    private FormData formTransactionalLabel;
+    private FormData formTransactionalText;
+
     private static String[] filterTypes = { FilterType.BLOOM.toString(), FilterType.MAP.toString() };
+
+    private ModifyListener modifyListener = new ModifyListener() {
+        @Override
+        public void modifyText(ModifyEvent e) {
+            input.setChanged();
+        }
+    };
+
+    private SelectionAdapter selectionModifyListener = new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            input.setChanged();
+        }
+    };
 
     private SelectionAdapter comboFilterTypeListener = new SelectionAdapter() {
         @Override
         public void widgetSelected(SelectionEvent e) {
-
-            input.setChanged();
 
             if (FilterType.BLOOM.toString().equals(comboFilterType.getText())) {
                 textProbability.setEnabled(true);
@@ -108,8 +125,6 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
     private SelectionAdapter checkAlwaysPassRowListener = new SelectionAdapter() {
         @Override
         public void widgetSelected(SelectionEvent e) {
-
-            input.setChanged();
 
             if (checkAlwaysPassRow.getSelection()) {
                 textUniqueField.setEnabled(true);
@@ -138,12 +153,6 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         props.setLook(shell);
         setShellImage(shell, input);
 
-        ModifyListener lsMod = new ModifyListener() {
-            public void modifyText(ModifyEvent e) {
-                input.setChanged();
-            }
-        };
-
         changed = input.hasChanged();
 
         FormLayout formLayout   = new FormLayout();
@@ -171,7 +180,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         wStepname.setText(stepname);
         props.setLook(wStepname);
-        wStepname.addModifyListener(lsMod);
+        wStepname.addModifyListener(modifyListener);
 
         fdStepname       = new FormData();
         fdStepname.left  = new FormAttachment(middle, 0);
@@ -196,9 +205,9 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         comboFilterType.setToolTipText(getString("FilterPlugin.FilterType.Label"));
         comboFilterType.addSelectionListener(comboFilterTypeListener);
+        comboFilterType.addSelectionListener(selectionModifyListener);
         comboFilterType.setItems(filterTypes);
         props.setLook(comboFilterType);
-        comboFilterType.addModifyListener(lsMod);
 
         formFilterTypeCombo      = new FormData();
         formFilterTypeCombo.left = new FormAttachment(middle, margin);
@@ -207,28 +216,52 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         comboFilterType.setLayoutData(formFilterTypeCombo);
 
+        // Transactional
+        labelTransactional = new Label(shell, SWT.RIGHT);
+        labelTransactional.setText(getString("FilterPlugin.Transactional.Label"));
+        props.setLook(labelTransactional);
+
+        formTransactionalLabel       = new FormData();
+        formTransactionalLabel.left  = new FormAttachment(0, 0);
+        formTransactionalLabel.right = new FormAttachment(middle, -margin);
+        formTransactionalLabel.top   = new FormAttachment(comboFilterType , margin);
+
+        labelTransactional.setLayoutData(formTransactionalLabel);
+
+        checkTransactional = new Button(shell, SWT.CHECK);
+        props.setLook(checkTransactional);
+        checkTransactional.addSelectionListener(selectionModifyListener);
+
+        formTransactionalText        = new FormData();
+        formTransactionalText.left   = new FormAttachment(middle, 0);
+        formTransactionalText.right  = new FormAttachment(100, 0);
+        formTransactionalText.top    = new FormAttachment(comboFilterType, margin);
+
+        checkTransactional.setLayoutData(formTransactionalText);
+
         // Unique Field
         labelAlwaysPassRow = new Label(shell, SWT.RIGHT);
         labelAlwaysPassRow.setText(getString("FilterPlugin.AlwaysPassRow.Label"));
         props.setLook(labelAlwaysPassRow);
 
-        formAlwaysPassLabel       = new FormData();
-        formAlwaysPassLabel.left  = new FormAttachment(0, 0);
-        formAlwaysPassLabel.right = new FormAttachment(middle, -margin);
-        formAlwaysPassLabel.top   = new FormAttachment(comboFilterType , margin);
+        formAlwaysPassRowLabel       = new FormData();
+        formAlwaysPassRowLabel.left  = new FormAttachment(0, 0);
+        formAlwaysPassRowLabel.right = new FormAttachment(middle, -margin);
+        formAlwaysPassRowLabel.top   = new FormAttachment(checkTransactional, margin);
 
-        labelAlwaysPassRow.setLayoutData(formAlwaysPassLabel);
+        labelAlwaysPassRow.setLayoutData(formAlwaysPassRowLabel);
 
         checkAlwaysPassRow = new Button(shell, SWT.CHECK);
         checkAlwaysPassRow.addSelectionListener(checkAlwaysPassRowListener);
+        checkAlwaysPassRow.addSelectionListener(selectionModifyListener);
         props.setLook(checkAlwaysPassRow);
 
-        formAlwaysPassText        = new FormData();
-        formAlwaysPassText.left   = new FormAttachment(middle, 0);
-        formAlwaysPassText.right  = new FormAttachment(100, 0);
-        formAlwaysPassText.top    = new FormAttachment(comboFilterType, margin);
+        formAlwaysPassRowText        = new FormData();
+        formAlwaysPassRowText.left   = new FormAttachment(middle, 0);
+        formAlwaysPassRowText.right  = new FormAttachment(100, 0);
+        formAlwaysPassRowText.top    = new FormAttachment(checkTransactional, margin);
 
-        checkAlwaysPassRow.setLayoutData(formAlwaysPassText);
+        checkAlwaysPassRow.setLayoutData(formAlwaysPassRowText);
 
          // UniqueField line
         labelUniqueField = new Label(shell, SWT.RIGHT);
@@ -245,7 +278,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         textUniqueField = new Text(shell, SWT.MULTI | SWT.LEFT | SWT.BORDER);
 
         props.setLook(textUniqueField);
-        textUniqueField.addModifyListener(lsMod);
+        textUniqueField.addModifyListener(modifyListener);
 
         formUniqueFieldText        = new FormData();
         formUniqueFieldText.left   = new FormAttachment(middle, 0);
@@ -269,7 +302,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         textHash = new Text(shell, SWT.MULTI | SWT.LEFT | SWT.BORDER);
 
         props.setLook(textHash);
-        textHash.addModifyListener(lsMod);
+        textHash.addModifyListener(modifyListener);
 
         formHashText        = new FormData();
         formHashText.left   = new FormAttachment(middle, 0);
@@ -292,7 +325,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         textTime = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 
         props.setLook(textTime);
-        textTime.addModifyListener(lsMod);
+        textTime.addModifyListener(modifyListener);
 
         formTimeText        = new FormData();
         formTimeText.left   = new FormAttachment(middle, 0);
@@ -315,7 +348,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         textElements = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 
         props.setLook(textElements);
-        textElements.addModifyListener(lsMod);
+        textElements.addModifyListener(modifyListener);
 
         formElementsText        = new FormData();
         formElementsText.left   = new FormAttachment(middle, 0);
@@ -340,7 +373,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         textProbability = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 
         props.setLook(textProbability);
-        textProbability.addModifyListener(lsMod);
+        textProbability.addModifyListener(modifyListener);
 
         formProbabilityText         = new FormData();
         formProbabilityText.left    = new FormAttachment(middle, 0);
@@ -365,7 +398,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         textUri = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 
         props.setLook(textUri);
-        textUri.addModifyListener(lsMod);
+        textUri.addModifyListener(modifyListener);
 
         formUriText         = new FormData();
         formUriText.left    = new FormAttachment(middle, 0);
@@ -390,7 +423,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         textLookups = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 
         props.setLook(textLookups);
-        textLookups.addModifyListener(lsMod);
+        textLookups.addModifyListener(modifyListener);
 
         formLookupsText         = new FormData();
         formLookupsText.left    = new FormAttachment(middle, 0);
@@ -415,7 +448,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         textDivision = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 
         props.setLook(textDivision);
-        textDivision.addModifyListener(lsMod);
+        textDivision.addModifyListener(modifyListener);
 
         formDivisionText        = new FormData();
         formDivisionText.left   = new FormAttachment(middle, 0);
@@ -521,9 +554,14 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         }
 
         checkAlwaysPassRow.setSelection(false);
+        checkTransactional.setSelection(false);
 
         if (input.isAlwaysPassRow()) {
             checkAlwaysPassRow.setSelection(true);
+        }
+
+        if (input.isTransactional()) {
+            checkTransactional.setSelection(true);
         }
 
         if (input.getUniqueFieldName() != null) {
@@ -576,6 +614,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         input.setProbability(textProbability.getText());
         input.setUniqueFieldName(textUniqueField.getText());
         input.setAlwaysPassRow(checkAlwaysPassRow.getSelection());
+        input.setTransactional(checkTransactional.getSelection());
 
         dispose();
     }
