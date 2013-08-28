@@ -25,7 +25,7 @@ public class FilterPluginData extends BaseStepData implements StepDataInterface
     /**
      * Hash filter index
      */
-    public Integer hashFieldIndex = null;
+    public Integer[] fieldsIndex = new Integer[]{};
 
     /**
      * Timestamp filter index

@@ -1,5 +1,6 @@
 package net.nationalfibre.pentaho.plugin.filter;
 
+import com.google.common.base.Joiner;
 import java.util.List;
 import java.util.Map;
 
@@ -37,18 +38,18 @@ import org.w3c.dom.Node;
  */
 public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
 {
-    private static String FIELD_UNIQUE_FIELD_NAME   = "unique_field_name";
-    private static String FIELD_ALWAYS_PASS_ROW     = "always_pass_row";
-    private static String FIELD_HASH_FUNCTION       = "hash_function";
-    private static String FIELD_PROBABLILITY        = "probability";
-    private static String FIELD_TRANSACTIONAL       = "transactional";
-    private static String FIELD_ELEMENTS            = "elements";
-    private static String FIELD_LOOKUPS             = "lookups";
-    private static String FIELD_DIVISION            = "division";
-    private static String FIELD_FILTER              = "filter";
-    private static String FIELD_HASH                = "hash";
-    private static String FIELD_TIME                = "time";
-    private static String FIELD_URI                 = "uri";
+    private static String FIELD_IS_UNIQUE_FIELD_NAME = "is_unique_field_name";
+    private static String FIELD_ALWAYS_PASS_ROW      = "always_pass_row";
+    private static String FIELD_HASH_FUNCTION        = "hash_function";
+    private static String FIELD_PROBABLILITY         = "probability";
+    private static String FIELD_TRANSACTIONAL        = "transactional";
+    private static String FIELD_UNIQUE_FIELDS_NAME   = "field_names";
+    private static String FIELD_ELEMENTS             = "elements";
+    private static String FIELD_LOOKUPS              = "lookups";
+    private static String FIELD_DIVISION             = "division";
+    private static String FIELD_FILTER               = "filter";
+    private static String FIELD_TIME                 = "time";
+    private static String FIELD_URI                  = "uri";
 
     private String elements;
     private String probability;
@@ -62,6 +63,8 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     private String hash;
     private String time;
     private String filter;
+
+    private String[] uniqueFieldsName;
     
     public FilterPluginMeta() {
         super();
@@ -101,7 +104,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         }
 
         // a value meta object contains the meta data for a field
-        ValueMetaInterface v = new ValueMeta(getUniqueFieldName(), ValueMeta.TYPE_INTEGER);
+        ValueMetaInterface v = new ValueMeta(getIsUniqueFieldName(), ValueMeta.TYPE_INTEGER);
         // the name of the step that adds this field
         v.setOrigin(name);
         // modify the row structure and add the field this step generates
@@ -124,21 +127,24 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
             ? new CheckResult(CheckResult.TYPE_RESULT_OK, "Step is receiving info from other steps.", stepMeta)
             : new CheckResult(CheckResult.TYPE_RESULT_ERROR, "No input received from other steps!", stepMeta);
 
-        CheckResult hashFieldCheck = ((prev == null) || (prev.indexOfValue(getHash()) < 0))
-            ? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Hash field not found.", stepMeta)
-            : new CheckResult(CheckResult.TYPE_RESULT_OK, "Hash field found.", stepMeta);
+        for (String fieldName : getUniqueFieldsName()) {
+            CheckResult hashFieldCheck = ((prev == null) || (prev.indexOfValue(fieldName) < 0))
+            ? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Field " + fieldName + "not found.", stepMeta)
+            : new CheckResult(CheckResult.TYPE_RESULT_OK, "Field " + fieldName + "found.", stepMeta);
+
+            remarks.add(hashFieldCheck);
+        }
 
         CheckResult timeFieldCheck = ((prev == null) || (prev.indexOfValue(getTime()) < 0))
             ? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Timestamp field not found.", stepMeta)
             : new CheckResult(CheckResult.TYPE_RESULT_OK, "Timestamp field found.", stepMeta);
 
-        CheckResult uniqueFieldCheck = isAlwaysPassRow() && Const.isEmpty(getUniqueFieldName())
+        CheckResult uniqueFieldCheck = isAlwaysPassRow() && Const.isEmpty(getIsUniqueFieldName())
             ? new CheckResult(CheckResult.TYPE_RESULT_ERROR, "Invalid unique field.", stepMeta)
             : new CheckResult(CheckResult.TYPE_RESULT_OK, "Unique field found.", stepMeta);
 
         remarks.add(prevSizeCheck);
         remarks.add(inputLengthCheck);
-        remarks.add(hashFieldCheck);
         remarks.add(timeFieldCheck);
         remarks.add(uniqueFieldCheck);
     }
@@ -151,7 +157,8 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     {
         final StringBuilder bufer = new StringBuilder();
 
-        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_UNIQUE_FIELD_NAME, getUniqueFieldName()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_UNIQUE_FIELDS_NAME, getUniqueFieldsNameString()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_IS_UNIQUE_FIELD_NAME, getIsUniqueFieldName()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_ALWAYS_PASS_ROW, isAlwaysPassRow()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_TRANSACTIONAL, isTransactional()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_HASH_FUNCTION, getHashFunction()));
@@ -160,7 +167,6 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_DIVISION, getDivision()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_LOOKUPS, getLookups()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_FILTER, getFilter()));
-        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_HASH, getHash()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_TIME, getTime()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_URI, getUri()));
 
@@ -174,7 +180,8 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException
     {
         try {
-            setUniqueFieldName(XMLHandler.getTagValue(stepnode, FIELD_UNIQUE_FIELD_NAME));
+            setUniqueFieldsNameString(XMLHandler.getTagValue(stepnode, FIELD_UNIQUE_FIELDS_NAME));
+            setIsUniqueFieldName(XMLHandler.getTagValue(stepnode, FIELD_IS_UNIQUE_FIELD_NAME));
             setAlwaysPassRow(XMLHandler.getTagValue(stepnode, FIELD_ALWAYS_PASS_ROW));
             setTransactional(XMLHandler.getTagValue(stepnode, FIELD_TRANSACTIONAL));
             setHashFunction(XMLHandler.getTagValue(stepnode, FIELD_HASH_FUNCTION));
@@ -183,7 +190,6 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
             setDivision(XMLHandler.getTagValue(stepnode, FIELD_DIVISION));
             setLookups(XMLHandler.getTagValue(stepnode, FIELD_LOOKUPS));
             setFilter(XMLHandler.getTagValue(stepnode, FIELD_FILTER));
-            setHash(XMLHandler.getTagValue(stepnode, FIELD_HASH));
             setTime(XMLHandler.getTagValue(stepnode, FIELD_TIME));
             setUri(XMLHandler.getTagValue(stepnode, FIELD_URI));
 
@@ -200,7 +206,8 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     {
         try {
 
-            setUniqueFieldName(rep.getStepAttributeString(idStep, FIELD_UNIQUE_FIELD_NAME));
+            setUniqueFieldsNameString(rep.getStepAttributeString(idStep, FIELD_UNIQUE_FIELDS_NAME));
+            setIsUniqueFieldName(rep.getStepAttributeString(idStep, FIELD_IS_UNIQUE_FIELD_NAME));
             setAlwaysPassRow(rep.getStepAttributeBoolean(idStep, FIELD_ALWAYS_PASS_ROW));
             setTransactional(rep.getStepAttributeString(idStep, FIELD_TRANSACTIONAL));
             setHashFunction(rep.getStepAttributeString(idStep, FIELD_HASH_FUNCTION));
@@ -209,7 +216,6 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
             setDivision(rep.getStepAttributeString(idStep, FIELD_DIVISION));
             setLookups(rep.getStepAttributeString(idStep, FIELD_LOOKUPS));
             setFilter(rep.getStepAttributeString(idStep, FIELD_FILTER));
-            setHash(rep.getStepAttributeString(idStep, FIELD_HASH));
             setTime(rep.getStepAttributeString(idStep, FIELD_TIME));
             setUri(rep.getStepAttributeString(idStep, "uri"));
 
@@ -227,7 +233,9 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     public void saveRep(Repository rep, ObjectId idTransformation, ObjectId idStep) throws KettleException
     {
         try {
-            rep.saveStepAttribute(idTransformation, idStep, FIELD_UNIQUE_FIELD_NAME, getUniqueFieldName());
+
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_UNIQUE_FIELDS_NAME, getUniqueFieldsNameString());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_IS_UNIQUE_FIELD_NAME, getIsUniqueFieldName());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_ALWAYS_PASS_ROW, isAlwaysPassRow());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_TRANSACTIONAL, isTransactional());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_HASH_FUNCTION, getHashFunction());
@@ -236,7 +244,6 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
             rep.saveStepAttribute(idTransformation, idStep, FIELD_DIVISION, getDivision());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_LOOKUPS, getLookups());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_FILTER, getFilter());
-            rep.saveStepAttribute(idTransformation, idStep, FIELD_HASH, getHash());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_TIME, getTime());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_URI, getUri());
 
@@ -251,6 +258,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     @Override
     public void setDefault()
     {
+        this.uniqueFieldsName  = new String[] {};
         this.elements    = "1000";
         this.probability = "0.1";
 
@@ -336,16 +344,6 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         this.filter = filter;
     }
 
-    public String getHash()
-    {
-        return hash;
-    }
-
-    public void setHash(String hashFieldName)
-    {
-        this.hash = hashFieldName;
-    }
-
     public String getTime()
     {
         return time;
@@ -386,7 +384,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         this.alwaysPassRow = alwaysGiveRow;
     }
 
-    public String getUniqueFieldName()
+    public String getIsUniqueFieldName()
     {
         if (Const.isEmpty(uniqueFieldName)) {
             uniqueFieldName = "is_unique";
@@ -395,7 +393,7 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         return uniqueFieldName;
     }
 
-    public void setUniqueFieldName(String uniqueRowName)
+    public void setIsUniqueFieldName(String uniqueRowName)
     {
         this.uniqueFieldName = uniqueRowName;
     }
@@ -408,5 +406,31 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     public void setHashFunction(String hashFunction)
     {
         this.hashFunction = hashFunction;
+    }
+
+    public void setUniqueFieldsName(String[] fieldsName)
+    {
+        this.uniqueFieldsName = fieldsName;
+    }
+
+    public void setUniqueFieldsNameString(String fieldsName)
+    {
+        if (fieldsName != null) {
+            this.uniqueFieldsName = fieldsName.split(",");
+        }
+    }
+
+    public String getUniqueFieldsNameString()
+    {
+        return Joiner.on(",").join(getUniqueFieldsName());
+    }
+
+    public String[] getUniqueFieldsName()
+    {
+        if (this.uniqueFieldsName == null) {
+            this.uniqueFieldsName = new String[]{};
+        }
+
+        return this.uniqueFieldsName;
     }
 }

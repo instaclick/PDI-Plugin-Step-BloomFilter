@@ -2,7 +2,6 @@ package net.nationalfibre.pentaho.plugin.filter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import net.nationalfibre.filter.Data;
 import net.nationalfibre.filter.DataFilter;
 import net.nationalfibre.filter.FilterConfig;
@@ -103,8 +102,8 @@ public class FilterPlugin extends BaseStep implements StepInterface
             initFilter();
         }
 
-        if (r.length < data.hashFieldIndex || r.length < data.timeFieldIndex) {
-            String putErrorMessage = getLinesRead() + " - Ignore empty row";
+        if (r.length < data.timeFieldIndex || r[data.timeFieldIndex] == null) {
+            String putErrorMessage = getLinesRead() + " - Ignore invalid timestamp row";
 
             if (isDebug()) {
                 logDebug(putErrorMessage);
@@ -115,19 +114,33 @@ public class FilterPlugin extends BaseStep implements StepInterface
             return true;
         }
 
-        if (r[data.hashFieldIndex] == null || r[data.timeFieldIndex] == null) {
-            String putErrorMessage = getLinesRead() + " - Ignore null row";
+        StringBuilder hashBuffer = new StringBuilder();
+        int lastIndex            = data.fieldsIndex.length > 0
+            ? data.fieldsIndex[data.fieldsIndex.length-1]
+            : 0;
 
-            if (isDebug()) {
-                logDebug(putErrorMessage);
+        for (Integer fieldIndex : data.fieldsIndex) {
+
+            if (r.length < fieldIndex) {
+                String putErrorMessage = getLinesRead() + " - Ignore invalid unique row";
+
+                if (isDebug()) {
+                    logDebug(putErrorMessage);
+                }
+
+                putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin000");
+
+                return true;
             }
 
-            putError(getInputRowMeta(), r, 1, putErrorMessage, null, "ICFilterPlugin002");
+            hashBuffer.append(String.valueOf(r[fieldIndex]));
 
-            return true;
+            if (fieldIndex != lastIndex) {
+                hashBuffer.append("-");
+            }
         }
 
-        data.hashValue  = String.valueOf(r[data.hashFieldIndex]);
+        data.hashValue  = hashBuffer.toString();
         data.timeValue  = Long.parseLong(String.valueOf(r[data.timeFieldIndex]));
         data.filterData = new Data(data.hashValue, data.timeValue);
         data.isUnique   = 1L;
@@ -135,7 +148,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
         if ( ! filter.add(data.filterData)) {
 
             if (isDebug()) {
-                logDebug(getLinesRead() + " - Non unique row : " + data.hashValue);
+                logDebug("Non unique row : " + data.hashValue);
             }
 
             if ( ! data.isAlwaysPassRow) {
@@ -149,7 +162,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
         data.uniqueCount += data.isUnique;
 
         if (isDebug()) {
-            logDebug(getLinesRead() + " - Unique row : " + data.hashValue);
+            logDebug("Unique row : " + data.hashValue);
         }
 
         if (data.isAlwaysPassRow) {
@@ -205,14 +218,9 @@ public class FilterPlugin extends BaseStep implements StepInterface
         HashFunctionType hType  = HashFunctionType.NONE;
         ProviderType pType      = ProviderType.VFS;
         FilterType   fType      = FilterType.MAP;
-        String hashFieldName    = meta.getHash();
         String timeFieldName    = meta.getTime();
         String uriStr           = meta.getUri();
         URI uri                 = null;
-
-        if (hashFieldName == null) {
-            throw new FilterException("Unable to retrieve hash field name");
-        }
 
         if (timeFieldName == null) {
             throw new FilterException("Unable to retrieve timestamp field name");
@@ -254,20 +262,26 @@ public class FilterPlugin extends BaseStep implements StepInterface
         meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
 
         // get field index
-        data.hashFieldIndex   = data.outputRowMeta.indexOfValue(hashFieldName);
+        data.fieldsIndex      = new Integer[meta.getUniqueFieldsName().length];
         data.timeFieldIndex   = data.outputRowMeta.indexOfValue(timeFieldName);
         data.isAlwaysPassRow  = meta.isAlwaysPassRow();
         data.isTransactional  = meta.isTransactional();
         data.uniqueCount      = 0L;
 
-        if (data.hashFieldIndex == null || data.hashFieldIndex < 0) {
-            throw new FilterException("Unable to retrieve hash field : " + hashFieldName);
+        for (int i = 0; i < meta.getUniqueFieldsName().length; i++) {
+
+            String fieldName = meta.getUniqueFieldsName()[i];
+            int fieldIndex   = data.outputRowMeta.indexOfValue(fieldName);
+
+            if (fieldIndex < 0) {
+                throw new FilterException("Unable to retrieve hash field : " + fieldName);
+            }
+
+            data.fieldsIndex[i] = fieldIndex;
         }
 
-        if (data.timeFieldIndex == null || data.hashFieldIndex < 0) {
-            throw new FilterException("Unable to retrieve time field : " + timeFieldName);
-        }
-
+        logMinimal(getString("FilterPlugin.Fields.Label")       + " : " + meta.getUniqueFieldsNameString());
+        logMinimal(getString("FilterPlugin.Time.Label")         + " : " + timeFieldName);
         logMinimal(getString("FilterPlugin.Uri.Label")          + " : " + config.getURI());
         logMinimal(getString("FilterPlugin.FilterType.Label")   + " : " + config.getFilter());
         logMinimal(getString("FilterPlugin.ProviderType.Label") + " : " + config.getProvider());

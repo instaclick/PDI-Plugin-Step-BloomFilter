@@ -1,5 +1,7 @@
 package net.nationalfibre.pentaho.plugin.filter;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.nationalfibre.filter.FilterType;
 import net.nationalfibre.filter.HashFunctionType;
 import org.eclipse.swt.SWT;
@@ -27,6 +29,10 @@ import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import static net.nationalfibre.pentaho.plugin.filter.Messages.getString;
+import org.eclipse.swt.widgets.Table;
+import org.pentaho.di.ui.core.widget.ColumnInfo;
+import org.pentaho.di.ui.core.widget.TableView;
+import org.eclipse.swt.widgets.TableItem;
 
 /**
  * Pentaho filter plugin dialog
@@ -35,11 +41,7 @@ import static net.nationalfibre.pentaho.plugin.filter.Messages.getString;
  */
 public class FilterPluginDialog extends BaseStepDialog implements StepDialogInterface
 {
-
     private FilterPluginMeta input;
-    private Label labelHash;
-    private Text textHash;
-    private FormData formHashLabel, formHashText;
 
     private Label labelTime;
     private Text textTime;
@@ -95,6 +97,15 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
     private Button checkTransactional;
     private FormData formTransactionalLabel;
     private FormData formTransactionalText;
+
+    private Label labelFields;
+    private TableView tableFields;
+    private FormData fromFieldsLabel;
+    private FormData formFieldsTable;
+
+    private ColumnInfo[] colinf = new ColumnInfo[] {
+        new ColumnInfo(getString("FilterPlugin.Fields.Label"), ColumnInfo.COLUMN_TYPE_TEXT, false),
+    };
 
     private static String[] filterTypes = { FilterType.BLOOM.toString(), FilterType.MAP.toString() };
     private static String[] hashFunctionTypes = HashFunctionType.getHashFunctionNames();
@@ -223,6 +234,32 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         comboFilterType.setLayoutData(formFilterTypeCombo);
 
+        // Hash Function
+        labelHashFunction=new Label(shell, SWT.RIGHT);
+        labelHashFunction.setText(getString("FilterPlugin.HashFunction.Label"));
+        props.setLook(labelHashFunction);
+
+        formHashFunctionLabel       = new FormData();
+        formHashFunctionLabel.left  = new FormAttachment(0, 0);
+        formHashFunctionLabel.top   = new FormAttachment(comboFilterType, margin);
+        formHashFunctionLabel.right = new FormAttachment(middle, 0);
+
+        labelHashFunction.setLayoutData(formHashFunctionLabel);
+
+        comboHashFunction = new CCombo(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER | SWT.READ_ONLY);
+
+        comboHashFunction.setToolTipText(getString("FilterPlugin.HashFunction.Label"));
+        comboHashFunction.setItems(hashFunctionTypes);
+        comboHashFunction.addModifyListener(modifyListener);
+        props.setLook(comboHashFunction);
+        
+        formHashFunctionCombo      = new FormData();
+        formHashFunctionCombo.left = new FormAttachment(middle, margin);
+        formHashFunctionCombo.top  = new FormAttachment(comboFilterType, margin);
+        formHashFunctionCombo.right= new FormAttachment(100, 0);
+
+        comboHashFunction.setLayoutData(formHashFunctionCombo);
+
         // Transactional
         labelTransactional = new Label(shell, SWT.RIGHT);
         labelTransactional.setText(getString("FilterPlugin.Transactional.Label"));
@@ -231,7 +268,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formTransactionalLabel       = new FormData();
         formTransactionalLabel.left  = new FormAttachment(0, 0);
         formTransactionalLabel.right = new FormAttachment(middle, -margin);
-        formTransactionalLabel.top   = new FormAttachment(comboFilterType , margin);
+        formTransactionalLabel.top   = new FormAttachment(comboHashFunction , margin);
 
         labelTransactional.setLayoutData(formTransactionalLabel);
 
@@ -242,37 +279,11 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formTransactionalText        = new FormData();
         formTransactionalText.left   = new FormAttachment(middle, 0);
         formTransactionalText.right  = new FormAttachment(100, 0);
-        formTransactionalText.top    = new FormAttachment(comboFilterType, margin);
+        formTransactionalText.top    = new FormAttachment(comboHashFunction, margin);
 
         checkTransactional.setLayoutData(formTransactionalText);
 
-        // Hash Function
-        labelHashFunction=new Label(shell, SWT.RIGHT);
-        labelHashFunction.setText(getString("FilterPlugin.HashFunction.Label"));
-        props.setLook(labelHashFunction);
-
-        formHashFunctionLabel       = new FormData();
-        formHashFunctionLabel.left  = new FormAttachment(0, 0);
-        formHashFunctionLabel.top   = new FormAttachment(checkTransactional, margin);
-        formHashFunctionLabel.right = new FormAttachment(middle, 0);
-
-        labelHashFunction.setLayoutData(formHashFunctionLabel);
-
-        comboHashFunction = new CCombo(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER | SWT.READ_ONLY);
-
-        comboHashFunction.setToolTipText(getString("FilterPlugin.HashFunction.Label"));
-        comboHashFunction.setItems(HashFunctionType.getHashFunctionNames());
-        comboHashFunction.addModifyListener(modifyListener);
-        props.setLook(comboHashFunction);
-        
-        formHashFunctionCombo      = new FormData();
-        formHashFunctionCombo.left = new FormAttachment(middle, margin);
-        formHashFunctionCombo.top  = new FormAttachment(checkTransactional, margin);
-        formHashFunctionCombo.right= new FormAttachment(100, 0);
-
-        comboHashFunction.setLayoutData(formHashFunctionCombo);
-
-        // Unique Field
+        // Always Pass The Row
         labelAlwaysPassRow = new Label(shell, SWT.RIGHT);
         labelAlwaysPassRow.setText(getString("FilterPlugin.AlwaysPassRow.Label"));
         props.setLook(labelAlwaysPassRow);
@@ -280,7 +291,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formAlwaysPassRowLabel       = new FormData();
         formAlwaysPassRowLabel.left  = new FormAttachment(0, 0);
         formAlwaysPassRowLabel.right = new FormAttachment(middle, -margin);
-        formAlwaysPassRowLabel.top   = new FormAttachment(comboHashFunction, margin);
+        formAlwaysPassRowLabel.top   = new FormAttachment(checkTransactional, margin);
 
         labelAlwaysPassRow.setLayoutData(formAlwaysPassRowLabel);
 
@@ -292,7 +303,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formAlwaysPassRowText        = new FormData();
         formAlwaysPassRowText.left   = new FormAttachment(middle, 0);
         formAlwaysPassRowText.right  = new FormAttachment(100, 0);
-        formAlwaysPassRowText.top    = new FormAttachment(comboHashFunction, margin);
+        formAlwaysPassRowText.top    = new FormAttachment(checkTransactional, margin);
 
         checkAlwaysPassRow.setLayoutData(formAlwaysPassRowText);
 
@@ -320,30 +331,6 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         textUniqueField.setLayoutData(formUniqueFieldText);
 
-        // hash line
-        labelHash = new Label(shell, SWT.RIGHT);
-        labelHash.setText(getString("FilterPlugin.Hash.Label"));
-        props.setLook(labelHash);
-
-        formHashLabel       = new FormData();
-        formHashLabel.left  = new FormAttachment(0, 0);
-        formHashLabel.right = new FormAttachment(middle, -margin);
-        formHashLabel.top   = new FormAttachment(labelUniqueField , margin);
-
-        labelHash.setLayoutData(formHashLabel);
-
-        textHash = new Text(shell, SWT.MULTI | SWT.LEFT | SWT.BORDER);
-
-        props.setLook(textHash);
-        textHash.addModifyListener(modifyListener);
-
-        formHashText        = new FormData();
-        formHashText.left   = new FormAttachment(middle, 0);
-        formHashText.right  = new FormAttachment(100, 0);
-        formHashText.top    = new FormAttachment(labelUniqueField, margin);
-
-        textHash.setLayoutData(formHashText);
-
         // time line
         labelTime = new Label(shell, SWT.RIGHT);
         labelTime.setText(getString("FilterPlugin.Time.Label"));
@@ -352,7 +339,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formTimeLabel       = new FormData();
         formTimeLabel.left  = new FormAttachment(0, 0);
         formTimeLabel.right = new FormAttachment(middle, -margin);
-        formTimeLabel.top   = new FormAttachment(textHash, margin);
+        formTimeLabel.top   = new FormAttachment(textUniqueField, margin);
 
         labelTime.setLayoutData(formTimeLabel);
         textTime = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
@@ -363,7 +350,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formTimeText        = new FormData();
         formTimeText.left   = new FormAttachment(middle, 0);
         formTimeText.right  = new FormAttachment(100, 0);
-        formTimeText.top    = new FormAttachment(textHash, margin);
+        formTimeText.top    = new FormAttachment(textUniqueField, margin);
         textTime.setLayoutData(formTimeText);
 
         // FilterSize line
@@ -490,6 +477,28 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         textDivision.setLayoutData(formDivisionText);
 
+        // Fields line
+        labelFields = new Label(shell, SWT.RIGHT);
+
+        labelFields.setText(getString("FilterPlugin.Fields.Label"));
+        props.setLook(labelFields);
+
+        fromFieldsLabel       = new FormData();
+        fromFieldsLabel.left  = new FormAttachment(0, 0);
+        fromFieldsLabel.right = new FormAttachment(middle, -margin);
+        fromFieldsLabel.top   = new FormAttachment(textDivision, margin);
+
+        labelFields.setLayoutData(fromFieldsLabel);
+
+        tableFields             = new TableView(transMeta, shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, colinf, 0, modifyListener ,props);
+        formFieldsTable         = new FormData();
+        formFieldsTable.left    = new FormAttachment(middle, 0);
+        formFieldsTable.right   = new FormAttachment(100, 0);
+        formFieldsTable.top     = new FormAttachment(textDivision, margin);
+        formFieldsTable.bottom  = new FormAttachment(90, -margin);
+
+        tableFields.setLayoutData(formFieldsTable);
+
         // Some buttons
         wOK     = new Button(shell, SWT.PUSH);
         wCancel = new Button(shell, SWT.PUSH);
@@ -497,15 +506,17 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         wOK.setText(getString("System.Button.OK"));
         wCancel.setText(getString("System.Button.Cancel"));
 
-        BaseStepDialog.positionBottomButtons(shell, new Button[]{wOK, wCancel}, margin, textDivision);
+        setButtonPositions(new Button[] { wOK, wCancel }, margin, null);
 
         // Add listeners
         lsCancel = new Listener() {
+            @Override
             public void handleEvent(Event e) {
                 cancel();
             }
         };
         lsOK = new Listener() {
+            @Override
             public void handleEvent(Event e) {
                 ok();
             }
@@ -522,7 +533,6 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         };
 
         wStepname.addSelectionListener(lsDef);
-        textHash.addSelectionListener(lsDef);
         textElements.addSelectionListener(lsDef);
         textTime.addSelectionListener(lsDef);
         textLookups.addSelectionListener(lsDef);
@@ -558,10 +568,6 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
     public void getData()
     {
         wStepname.selectAll();
-
-        if (input.getHash() != null) {
-            textHash.setText(input.getHash());
-        }
 
         if (input.getTime() != null) {
             textTime.setText(input.getTime());
@@ -604,8 +610,8 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
             checkTransactional.setSelection(true);
         }
 
-        if (input.getUniqueFieldName() != null) {
-            textUniqueField.setText(input.getUniqueFieldName());
+        if (input.getIsUniqueFieldName() != null) {
+            textUniqueField.setText(input.getIsUniqueFieldName());
         }
 
         String filter = input.getFilter();
@@ -615,6 +621,24 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         }
 
         setFilterType(filter);
+
+        Table table         = tableFields.table;
+        String[] fieldNames = input.getUniqueFieldsName();
+
+        if (fieldNames.length > 0) {
+            table.removeAll();
+        }
+
+        for (int i = 0; i < fieldNames.length; i++) {
+            TableItem ti = new TableItem(table, SWT.NONE);
+            ti.setText(0, String.valueOf((i + 1)));
+            ti.setText(1, (Const.isEmpty(fieldNames[i])) ? "" : fieldNames[i]);
+        }
+
+        tableFields.setRowNums();
+        tableFields.optWidth(true);
+
+        wStepname.selectAll();
     }
 
     private void setFilterType(String filter)
@@ -645,7 +669,6 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         stepname = wStepname.getText();
 
         input.setUri(textUri.getText());
-        input.setHash(textHash.getText());
         input.setTime(textTime.getText());
         input.setLookups(textLookups.getText());
         input.setFilter(comboFilterType.getText());
@@ -653,9 +676,25 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         input.setElements(textElements.getText());
         input.setProbability(textProbability.getText());
         input.setHashFunction(comboHashFunction.getText());
-        input.setUniqueFieldName(textUniqueField.getText());
+        input.setIsUniqueFieldName(textUniqueField.getText());
         input.setAlwaysPassRow(checkAlwaysPassRow.getSelection());
         input.setTransactional(checkTransactional.getSelection());
+
+        String[] fieldNames = new String[tableFields.nrNonEmpty()];
+
+        for (int i = 0; i < fieldNames.length; i++) {
+            final TableItem item = tableFields.getNonEmpty(i);
+            final String name    = item.getText(1);
+            fieldNames[i]        = name.replace(",", "").trim();
+        }
+
+        if (fieldNames.length == 0) {
+            tableFields.setFocus();
+
+            return;
+        }
+
+        input.setUniqueFieldsName(fieldNames);
 
         dispose();
     }
