@@ -11,7 +11,7 @@ import net.nationalfibre.filter.provider.FilterProvider;
  *
  * @author Fabio B. Silva <fabios@nationalfibre.net>
  */
-public class BloomDataFilter extends BaseDataFilter
+public class BloomDataFilter extends BaseDataFilter<BloomFilter>
 {
     /**
      * @param config            Filter configuration
@@ -43,7 +43,7 @@ public class BloomDataFilter extends BaseDataFilter
     /**
      * {@inheritDoc}
      */
-    protected FilterAdapter createFilter()
+    protected FilterAdapter createFilterAdapter()
     {
         double falsePositiveProbability = config.getFalsePositiveProbability();
         int expectedNumberOfElements    = config.getExpectedNumberOfElements();
@@ -62,7 +62,7 @@ enum StringHashFunnel implements Funnel<String>
     }
 }
 
-class BloomFilterAdapter implements FilterAdapter
+class BloomFilterAdapter implements FilterAdapter<BloomFilter>
 {
     private BloomFilter<String> filter;
 
@@ -71,13 +71,35 @@ class BloomFilterAdapter implements FilterAdapter
         this.filter = filter;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void add(String hash)
     {
         filter.put(hash);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(String hash)
     {
         return filter.mightContain(hash);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public BloomFilter getFilter()
+    {
+        return this.filter;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setFilter(BloomFilter filter)
+    {
+        this.filter = filter;
     }
 }

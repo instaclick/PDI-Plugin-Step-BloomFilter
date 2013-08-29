@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * @author Fabio B. Silva <fabios@nationalfibre.net>
  */
-public interface FilterAdapter extends Serializable
+public interface FilterAdapter <T extends Serializable> extends Serializable
 {
     /**
      * Adds the given {@link String}
@@ -22,4 +22,18 @@ public interface FilterAdapter extends Serializable
      * @return <b>TRUE</b> if the the {@link String} does not exists; <b>FALSE</b> otherwise
      */
     public boolean contains(String hash);
+
+    /**
+     * Gets the Serializable filter
+     * 
+     * @return
+     */
+    public T getFilter();
+
+    /**
+     * Sets the Serializable filter
+     * 
+     * @param filter
+     */
+    public void setFilter(T filter);
 }

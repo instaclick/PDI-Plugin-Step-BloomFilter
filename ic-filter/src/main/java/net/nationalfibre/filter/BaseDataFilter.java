@@ -2,6 +2,7 @@ package net.nationalfibre.filter;
 
 import com.google.common.hash.HashFunction;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,7 +15,7 @@ import net.nationalfibre.filter.provider.FilterProvider;
  *
  * @author Fabio B. Silva <fabios@nationalfibre.net>
  */
-abstract class BaseDataFilter implements DataFilter
+abstract class BaseDataFilter <T extends Serializable> implements DataFilter
 {
     /**
      * Filter configuration
@@ -39,7 +40,7 @@ abstract class BaseDataFilter implements DataFilter
     /**
      * Map of {@link FilterAdapter}
      */
-    protected Map<String, FilterAdapter> filters;
+    protected Map<String, FilterAdapter<T>> filters;
 
     /**
      * HashFunction
@@ -57,7 +58,7 @@ abstract class BaseDataFilter implements DataFilter
         this.hashFunction    = hashFunction;
         this.filterProvider  = filterProvider;
         this.dirtyFilters    = new HashSet<String>();
-        this.filters         = new HashMap<String, FilterAdapter>();
+        this.filters         = new HashMap<String, FilterAdapter<T>>();
         this.containsFilters = new HashMap<Integer, Boolean>();
     }
 
@@ -66,7 +67,7 @@ abstract class BaseDataFilter implements DataFilter
      *
      * @return
      */
-    protected abstract FilterAdapter createFilter();
+    protected abstract FilterAdapter createFilterAdapter();
 
     /**
      * Creates a filter name base on a integer hash code
@@ -181,11 +182,12 @@ abstract class BaseDataFilter implements DataFilter
         }
 
         try {
-            FilterAdapter filter = (FilterAdapter) filterProvider.loadFilter(name);
+            T filter = (T) filterProvider.loadFilter(name);
 
-            filters.put(name, filter);
+            filters.put(name, createFilterAdapter());
+            filters.get(name).setFilter(filter);
 
-            return filter;
+            return filters.get(name);
 
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -221,7 +223,7 @@ abstract class BaseDataFilter implements DataFilter
             return loadFilter(data);
         }
 
-        filters.put(name, createFilter());
+        filters.put(name, createFilterAdapter());
         markAsDirty(name);
 
         return filters.get(name);
@@ -307,7 +309,7 @@ abstract class BaseDataFilter implements DataFilter
     {
         try {
             for (String name : dirtyFilters) {
-                filterProvider.saveFilter(name, filters.get(name));
+                filterProvider.saveFilter(name, filters.get(name).getFilter());
             }
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);

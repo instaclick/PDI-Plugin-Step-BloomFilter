@@ -1,8 +1,7 @@
 package net.nationalfibre.filter;
 
-import com.google.common.hash.HashFunction;
 import java.util.HashSet;
-import java.util.Set;
+import com.google.common.hash.HashFunction;
 import net.nationalfibre.filter.provider.FilterProvider;
 
 /**
@@ -10,7 +9,7 @@ import net.nationalfibre.filter.provider.FilterProvider;
  *
  * @author Fabio B. Silva <fabios@nationalfibre.net>
  */
-public class MapDataFilter extends BaseDataFilter
+public class MapDataFilter extends BaseDataFilter<HashSet>
 {
     /**
      * @param config            Filter configuration
@@ -42,7 +41,7 @@ public class MapDataFilter extends BaseDataFilter
     /**
      * {@inheritDoc}
      */
-    protected FilterAdapter createFilter()
+    protected FilterAdapter createFilterAdapter()
     {
         return new HashSetAdapter();
     }
@@ -64,17 +63,39 @@ public class MapDataFilter extends BaseDataFilter
     }
 }
 
-class HashSetAdapter implements FilterAdapter
+class HashSetAdapter implements FilterAdapter<HashSet>
 {
-    private Set<String> filter = new HashSet<String>();
+    private HashSet<String> filter = new HashSet<String>();
 
+    /**
+     * {@inheritDoc}
+     */
     public void add(String hash)
     {
         filter.add(hash);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(String hash)
     {
         return filter.contains(hash);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HashSet getFilter()
+    {
+        return this.filter;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setFilter(HashSet filter)
+    {
+        this.filter = filter;
     }
 }
