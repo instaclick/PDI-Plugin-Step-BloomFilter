@@ -136,7 +136,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
             hashBuffer.append(String.valueOf(r[fieldIndex]));
 
             if (fieldIndex != lastIndex) {
-                hashBuffer.append("-");
+                hashBuffer.append("_");
             }
         }
 
