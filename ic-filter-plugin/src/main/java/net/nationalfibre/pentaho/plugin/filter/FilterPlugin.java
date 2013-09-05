@@ -211,15 +211,15 @@ public class FilterPlugin extends BaseStep implements StepInterface
      */
     private void initFilter() throws KettleStepException, FilterException
     {
-        Integer elements        = Integer.parseInt(meta.getElements());
-        Integer lookups         = Integer.parseInt(meta.getLookups());
-        Integer division        = Integer.parseInt(meta.getDivision());
-        Float probability       = Float.parseFloat(meta.getProbability());
+        Integer elements        = Integer.parseInt(environmentSubstitute(meta.getElements()));
+        Integer lookups         = Integer.parseInt(environmentSubstitute(meta.getLookups()));
+        Integer division        = Integer.parseInt(environmentSubstitute(meta.getDivision()));
+        Float probability       = Float.parseFloat(environmentSubstitute(meta.getProbability()));
+        String timeFieldName    = environmentSubstitute(meta.getTime());
+        String uriStr           = environmentSubstitute(meta.getUri());
         HashFunctionType hType  = HashFunctionType.NONE;
         ProviderType pType      = ProviderType.VFS;
         FilterType   fType      = FilterType.MAP;
-        String timeFieldName    = meta.getTime();
-        String uriStr           = meta.getUri();
         URI uri                 = null;
 
         if (timeFieldName == null) {
@@ -268,9 +268,13 @@ public class FilterPlugin extends BaseStep implements StepInterface
         data.isTransactional  = meta.isTransactional();
         data.uniqueCount      = 0L;
 
+        if (data.timeFieldIndex < 0) {
+            throw new FilterException("Unable to retrieve time field : " + timeFieldName);
+        }
+
         for (int i = 0; i < meta.getUniqueFieldsName().length; i++) {
 
-            String fieldName = meta.getUniqueFieldsName()[i];
+            String fieldName = environmentSubstitute(meta.getUniqueFieldsName()[i]);
             int fieldIndex   = data.outputRowMeta.indexOfValue(fieldName);
 
             if (fieldIndex < 0) {
