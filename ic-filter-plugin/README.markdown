@@ -38,16 +38,3 @@ All you'll need to get started is maven.
 
 This will produce a plugin in ic-filter-plugin/target/ic-filter-plugin-pdi-{version}.tar,
 This archive can then be extracted into your Pentaho Data Integration plugin directory.
-
-
-Pentaho Configuration
----------------------
-
-* Expected number of elements = 1000              # integer   -> Expected number of elements
-* False positive probability  = 0.1               # double    -> False positive probability
-* Number of lookups           = 1440              # integer   -> Number of times to lookups into files
-* Hash Field                  = hash              # string    -> hash field
-* Timestamp Field             = timestamp         # string    -> timestamp field
-* URL to store filters        = tmp://ic-filter/  # string    -> Filters URI
-* Timestamp Window Size       = 60                # double    -> The integer result of (${row.timestamp} / ${division}) will be the filter hash code
-                                                  # Epoch times divided by 60 equals epoch minutes

@@ -300,6 +300,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
         logMinimal(getString("FilterPlugin.AlwaysPassRow.Label") +  " : " + data.isAlwaysPassRow);
         logMinimal(getString("FilterPlugin.Division.Label")      +  " : " + config.getTimeDivision());
         logMinimal(getString("FilterPlugin.Lookups.Label")       +  " : " + config.getNumberOfLookups());
+        logMinimal(getString("FilterPlugin.UniqueField.Label")   +  " : " + meta.getIsUniqueFieldName());
 
         if (data.isTransactional) {
             getTrans().addTransListener(transListener);
