@@ -62,6 +62,11 @@ public class FilterPluginData extends BaseStepData implements StepDataInterface
      */
     public boolean isTransactional = false;
 
+    /**
+     * This step will never flush the filters.
+     */
+    public boolean isCheckOnly = false;
+
     public FilterPluginData()
     {
         super();

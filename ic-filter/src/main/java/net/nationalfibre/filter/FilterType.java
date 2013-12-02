@@ -7,6 +7,7 @@ package net.nationalfibre.filter;
  */
 public enum FilterType
 {
+    SINGLE_BLOOM,
     BLOOM,
     MAP,
 }

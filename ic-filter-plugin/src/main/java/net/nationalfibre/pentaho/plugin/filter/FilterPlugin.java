@@ -144,7 +144,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
         data.timeValue  = Long.parseLong(String.valueOf(r[data.timeFieldIndex]));
         data.filterData = new Data(data.hashValue, data.timeValue);
         data.isUnique   = 1L;
-
+        
         if ( ! filter.add(data.filterData)) {
 
             if (isDebug()) {
@@ -161,7 +161,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
         //Add unique counter
         data.uniqueCount += data.isUnique;
 
-        if (isDebug()) {
+        if (data.isUnique == 1L) {
             logDebug("Unique row : " + data.hashValue);
         }
 
@@ -187,6 +187,12 @@ public class FilterPlugin extends BaseStep implements StepInterface
     private void flushFilter()
     {
         logMinimal("Flush filters invoked");
+
+        if (data.isCheckOnly) {
+            logMinimal("Check only enabled, Ignoring changes.");
+
+            return;
+        }
 
         if (filter != null) {
             filter.flush();
@@ -215,12 +221,12 @@ public class FilterPlugin extends BaseStep implements StepInterface
         Integer lookups         = Integer.parseInt(environmentSubstitute(meta.getLookups()));
         Integer division        = Integer.parseInt(environmentSubstitute(meta.getDivision()));
         Float probability       = Float.parseFloat(environmentSubstitute(meta.getProbability()));
+        String singleFileName   = environmentSubstitute(meta.getSingleFilterFile());
         String timeFieldName    = environmentSubstitute(meta.getTime());
         String uriStr           = environmentSubstitute(meta.getUri());
         HashFunctionType hType  = HashFunctionType.NONE;
         ProviderType pType      = ProviderType.VFS;
-        FilterType   fType      = FilterType.MAP;
-        URI uri                 = null;
+        FilterType fType;
 
         if (timeFieldName == null) {
             throw new FilterException("Unable to retrieve timestamp field name");
@@ -230,23 +236,27 @@ public class FilterPlugin extends BaseStep implements StepInterface
             throw new FilterException("Unable to retrieve filter uri");
         }
 
-        if (FilterType.BLOOM.toString().equals(meta.getFilter())) {
-            fType = FilterType.BLOOM;
-        }
-
         if ( ! Const.isEmpty(meta.getHashFunction())) {
             hType = HashFunctionType.valueOf(meta.getHashFunction().trim());
         }
 
         try {
-            uri = new URI(uriStr);
-        } catch (URISyntaxException e) {
+            URI.create(uriStr);
+        } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
+        }
+
+        try {
+            fType = FilterType.valueOf(meta.getFilter());
+        } catch (Exception e) {
+            fType = FilterType.BLOOM;
+            logError(e.getMessage());
         }
 
         FilterConfig config = FilterConfig.create()
             .withFalsePositiveProbability(probability)
             .withExpectedNumberOfElements(elements)
+            .withFilterFileName(singleFileName)
             .withNumberOfLookups(lookups)
             .withHashFunctionType(hType)
             .withTimeDivision(division)
@@ -266,6 +276,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
         data.timeFieldIndex   = data.outputRowMeta.indexOfValue(timeFieldName);
         data.isAlwaysPassRow  = meta.isAlwaysPassRow();
         data.isTransactional  = meta.isTransactional();
+        data.isCheckOnly      = meta.isCheckOnly();
         data.uniqueCount      = 0L;
 
         if (data.timeFieldIndex < 0) {
@@ -298,6 +309,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
 
         logMinimal(getString("FilterPlugin.Transactional.Label") +  " : " + data.isTransactional);
         logMinimal(getString("FilterPlugin.AlwaysPassRow.Label") +  " : " + data.isAlwaysPassRow);
+        logMinimal(getString("FilterPlugin.CheckOnly.Label")     +  " : " + data.isCheckOnly);
         logMinimal(getString("FilterPlugin.Division.Label")      +  " : " + config.getTimeDivision());
         logMinimal(getString("FilterPlugin.Lookups.Label")       +  " : " + config.getNumberOfLookups());
         logMinimal(getString("FilterPlugin.UniqueField.Label")   +  " : " + meta.getIsUniqueFieldName());

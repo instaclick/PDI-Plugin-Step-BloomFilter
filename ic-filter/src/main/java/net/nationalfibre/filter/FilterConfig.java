@@ -23,6 +23,11 @@ public class FilterConfig
     private String uri;
 
     /**
+     * Single filter file name
+     */
+    private String filterFileName;
+
+    /**
      * Number that that the epoch timestamp will be divided
      */
     private double timeDivision = 60;
@@ -201,6 +206,27 @@ public class FilterConfig
         this.hashFunctionType = hashType;
 
         return this;
+    }
+
+    /**
+     * Sets {@link filterFileName}
+     * @param filterFileName
+     * @return
+     */
+    public FilterConfig withFilterFileName(String filterFileName)
+    {
+        this.filterFileName = filterFileName;
+
+        return this;
+    }
+
+    /**
+     * Gets {@link filterFileName}
+     * @return
+     */
+    public String getFilterFileName()
+    {
+        return filterFileName;
     }
 
     /**

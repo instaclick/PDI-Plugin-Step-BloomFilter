@@ -67,6 +67,10 @@ public class FilterFactory
             return new MapDataFilter(config, createProvider(config), createHashFunction(config));
         }
 
+        if (config.getFilter() == FilterType.SINGLE_BLOOM) {
+            return new SingleBloomDataFilter(config, createProvider(config), createHashFunction(config));
+        }
+
         throw new RuntimeException("Invalid filter : " + config.getFilter());
     }
 }

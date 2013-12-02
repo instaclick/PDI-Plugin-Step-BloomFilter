@@ -2,6 +2,8 @@ package net.nationalfibre.pentaho.plugin.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
 import net.nationalfibre.filter.FilterType;
 import net.nationalfibre.filter.HashFunctionType;
 import org.eclipse.swt.SWT;
@@ -93,10 +95,20 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
     private FormData formUniqueFieldLabel;
     private FormData formUniqueFieldText;
 
+    private Label labelFilterFile;
+    private Text textFilterFile;
+    private FormData formFilterFileLabel;
+    private FormData formFilterFileText;
+
     private Label labelTransactional;
     private Button checkTransactional;
     private FormData formTransactionalLabel;
     private FormData formTransactionalText;
+
+    private Label labelCheckOnly;
+    private Button checkCheckOnly;
+    private FormData formCheckOnlyLabel;
+    private FormData formCheckOnlyText;
 
     private Label labelFields;
     private TableView tableFields;
@@ -107,8 +119,12 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         new ColumnInfo(getString("FilterPlugin.Fields.Label"), ColumnInfo.COLUMN_TYPE_TEXT, false),
     };
 
-    private static String[] filterTypes = { FilterType.BLOOM.toString(), FilterType.MAP.toString() };
-    private static String[] hashFunctionTypes = HashFunctionType.getHashFunctionNames();
+    private static final String[] hashFunctionTypes = HashFunctionType.getHashFunctionNames();
+    private static final List<String> filterTypes = new ArrayList<String>(Arrays.asList(new String[]{
+        FilterType.BLOOM.toString(),
+        FilterType.MAP.toString(),
+        FilterType.SINGLE_BLOOM.toString()
+    }));
 
     private ModifyListener modifyListener = new ModifyListener() {
         @Override
@@ -128,9 +144,19 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         @Override
         public void widgetSelected(SelectionEvent e) {
 
-            if (FilterType.BLOOM.toString().equals(comboFilterType.getText())) {
+            textFilterFile.setEnabled(false);
+            textDivision.setEnabled(true);
+            textLookups.setEnabled(true);
+
+            if (FilterType.BLOOM.toString().equals(comboFilterType.getText()) || FilterType.SINGLE_BLOOM.toString().equals(comboFilterType.getText())) {
                 textProbability.setEnabled(true);
-                textElements.setEnabled(true); 
+                textElements.setEnabled(true);
+
+                if (FilterType.SINGLE_BLOOM.toString().equals(comboFilterType.getText())) {
+                    textFilterFile.setEnabled(true);
+                    textDivision.setEnabled(false);
+                    textLookups.setEnabled(false);
+                }
 
                 return;
             }
@@ -140,7 +166,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         }
     };
 
-    private SelectionAdapter checkAlwaysPassRowListener = new SelectionAdapter() {
+    private final SelectionAdapter checkAlwaysPassRowListener = new SelectionAdapter() {
         @Override
         public void widgetSelected(SelectionEvent e) {
 
@@ -154,6 +180,20 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         }
     };
 
+    private final SelectionAdapter checkCheckOnlyListener = new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+
+            if (checkCheckOnly.getSelection()) {
+                checkTransactional.setEnabled(false);
+
+                return;
+            }
+
+            checkTransactional.setEnabled(true);
+        }
+    };
+
 
     public FilterPluginDialog(Shell parent, Object in, TransMeta transMeta, String sname)
     {
@@ -162,6 +202,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         input = (FilterPluginMeta) in;
     }
 
+    @Override
     public String open()
     {
         Shell parent    = getParent();
@@ -224,7 +265,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         comboFilterType.setToolTipText(getString("FilterPlugin.FilterType.Label"));
         comboFilterType.addSelectionListener(comboFilterTypeListener);
         comboFilterType.addSelectionListener(selectionModifyListener);
-        comboFilterType.setItems(filterTypes);
+        comboFilterType.setItems(filterTypes.toArray(new String[filterTypes.size()]));
         props.setLook(comboFilterType);
 
         formFilterTypeCombo      = new FormData();
@@ -283,6 +324,30 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         checkTransactional.setLayoutData(formTransactionalText);
 
+        // CheckOnly
+        labelCheckOnly = new Label(shell, SWT.RIGHT);
+        labelCheckOnly.setText(getString("FilterPlugin.CheckOnly.Label"));
+        props.setLook(labelCheckOnly);
+
+        formCheckOnlyLabel       = new FormData();
+        formCheckOnlyLabel.left  = new FormAttachment(0, 0);
+        formCheckOnlyLabel.right = new FormAttachment(middle, -margin);
+        formCheckOnlyLabel.top   = new FormAttachment(checkTransactional , margin);
+
+        labelCheckOnly.setLayoutData(formCheckOnlyLabel);
+
+        checkCheckOnly = new Button(shell, SWT.CHECK);
+        props.setLook(checkCheckOnly);
+        checkCheckOnly.addSelectionListener(checkCheckOnlyListener);
+        checkCheckOnly.addSelectionListener(selectionModifyListener);
+
+        formCheckOnlyText        = new FormData();
+        formCheckOnlyText.left   = new FormAttachment(middle, 0);
+        formCheckOnlyText.right  = new FormAttachment(100, 0);
+        formCheckOnlyText.top    = new FormAttachment(checkTransactional, margin);
+
+        checkCheckOnly.setLayoutData(formCheckOnlyText);
+
         // Always Pass The Row
         labelAlwaysPassRow = new Label(shell, SWT.RIGHT);
         labelAlwaysPassRow.setText(getString("FilterPlugin.AlwaysPassRow.Label"));
@@ -291,7 +356,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formAlwaysPassRowLabel       = new FormData();
         formAlwaysPassRowLabel.left  = new FormAttachment(0, 0);
         formAlwaysPassRowLabel.right = new FormAttachment(middle, -margin);
-        formAlwaysPassRowLabel.top   = new FormAttachment(checkTransactional, margin);
+        formAlwaysPassRowLabel.top   = new FormAttachment(checkCheckOnly, margin);
 
         labelAlwaysPassRow.setLayoutData(formAlwaysPassRowLabel);
 
@@ -303,9 +368,33 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formAlwaysPassRowText        = new FormData();
         formAlwaysPassRowText.left   = new FormAttachment(middle, 0);
         formAlwaysPassRowText.right  = new FormAttachment(100, 0);
-        formAlwaysPassRowText.top    = new FormAttachment(checkTransactional, margin);
+        formAlwaysPassRowText.top    = new FormAttachment(checkCheckOnly, margin);
 
         checkAlwaysPassRow.setLayoutData(formAlwaysPassRowText);
+
+         // FilterFile line
+        labelFilterFile = new Label(shell, SWT.RIGHT);
+        labelFilterFile.setText(getString("FilterPlugin.FilterFile.Label"));
+        props.setLook(labelFilterFile);
+
+        formFilterFileLabel       = new FormData();
+        formFilterFileLabel.left  = new FormAttachment(0, 0);
+        formFilterFileLabel.right = new FormAttachment(middle, -margin);
+        formFilterFileLabel.top   = new FormAttachment(checkAlwaysPassRow , margin);
+
+        labelFilterFile.setLayoutData(formFilterFileLabel);
+
+        textFilterFile = new Text(shell, SWT.MULTI | SWT.LEFT | SWT.BORDER);
+
+        props.setLook(textFilterFile);
+        textFilterFile.addModifyListener(modifyListener);
+
+        formFilterFileText        = new FormData();
+        formFilterFileText.left   = new FormAttachment(middle, 0);
+        formFilterFileText.right  = new FormAttachment(100, 0);
+        formFilterFileText.top    = new FormAttachment(checkAlwaysPassRow, margin);
+
+        textFilterFile.setLayoutData(formFilterFileText);
 
          // UniqueField line
         labelUniqueField = new Label(shell, SWT.RIGHT);
@@ -315,7 +404,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formUniqueFieldLabel       = new FormData();
         formUniqueFieldLabel.left  = new FormAttachment(0, 0);
         formUniqueFieldLabel.right = new FormAttachment(middle, -margin);
-        formUniqueFieldLabel.top   = new FormAttachment(checkAlwaysPassRow , margin);
+        formUniqueFieldLabel.top   = new FormAttachment(labelFilterFile , margin);
 
         labelUniqueField.setLayoutData(formUniqueFieldLabel);
 
@@ -327,7 +416,7 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         formUniqueFieldText        = new FormData();
         formUniqueFieldText.left   = new FormAttachment(middle, 0);
         formUniqueFieldText.right  = new FormAttachment(100, 0);
-        formUniqueFieldText.top    = new FormAttachment(checkAlwaysPassRow, margin);
+        formUniqueFieldText.top    = new FormAttachment(labelFilterFile, margin);
 
         textUniqueField.setLayoutData(formUniqueFieldText);
 
@@ -597,9 +686,18 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
             comboHashFunction.setText(input.getHashFunction());
         }
 
+        if (input.getSingleFilterFile()!= null) {
+            textFilterFile.setText(input.getSingleFilterFile());
+        }
+
+        textDivision.setEnabled(true);
+        textLookups.setEnabled(true);
         checkAlwaysPassRow.setSelection(false);
         checkTransactional.setSelection(false);
+        checkCheckOnly.setSelection(false);
         textUniqueField.setEnabled(false);
+        textFilterFile.setEnabled(false);
+        checkTransactional.setEnabled(true);
 
         if (input.isAlwaysPassRow()) {
             checkAlwaysPassRow.setSelection(true);
@@ -608,6 +706,11 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
         if (input.isTransactional()) {
             checkTransactional.setSelection(true);
+        }
+
+        if (input.isCheckOnly()) {
+            checkTransactional.setEnabled(false);
+            checkCheckOnly.setSelection(true);
         }
 
         if (input.getIsUniqueFieldName() != null) {
@@ -643,17 +746,33 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
 
     private void setFilterType(String filter)
     {
-        if (FilterType.BLOOM.toString().equals(filter)) {
+        textFilterFile.setEnabled(false);
+        textDivision.setEnabled(true);
+        textLookups.setEnabled(true);
+
+        int index = filterTypes.indexOf(filter);
+
+        if (index == -1) {
+            index = 0;
+        }
+
+        comboFilterType.select(index);
+
+        if (FilterType.BLOOM.toString().equals(filter) || FilterType.SINGLE_BLOOM.toString().equals(filter)) {
             textProbability.setEnabled(true);
             textElements.setEnabled(true);
-            comboFilterType.select(0);
+
+            if (FilterType.SINGLE_BLOOM.toString().equals(filter)) {
+                textFilterFile.setEnabled(true);
+                textDivision.setEnabled(false);
+                textLookups.setEnabled(false);
+            }
 
             return;
         }
 
         textProbability.setEnabled(false);
         textElements.setEnabled(false);
-        comboFilterType.select(1);
     }
 
     private void cancel()
@@ -677,8 +796,10 @@ public class FilterPluginDialog extends BaseStepDialog implements StepDialogInte
         input.setProbability(textProbability.getText());
         input.setHashFunction(comboHashFunction.getText());
         input.setIsUniqueFieldName(textUniqueField.getText());
+        input.setSingleFilterFile(textFilterFile.getText());
         input.setAlwaysPassRow(checkAlwaysPassRow.getSelection());
         input.setTransactional(checkTransactional.getSelection());
+        input.setCheckOnly(checkCheckOnly.getSelection());
 
         String[] fieldNames = new String[tableFields.nrNonEmpty()];
 

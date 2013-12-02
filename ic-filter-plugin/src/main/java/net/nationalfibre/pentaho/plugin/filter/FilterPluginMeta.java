@@ -38,18 +38,20 @@ import org.w3c.dom.Node;
  */
 public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
 {
-    private static String FIELD_IS_UNIQUE_FIELD_NAME = "is_unique_field_name";
-    private static String FIELD_ALWAYS_PASS_ROW      = "always_pass_row";
-    private static String FIELD_HASH_FUNCTION        = "hash_function";
-    private static String FIELD_PROBABLILITY         = "probability";
-    private static String FIELD_TRANSACTIONAL        = "transactional";
-    private static String FIELD_UNIQUE_FIELDS_NAME   = "field_names";
-    private static String FIELD_ELEMENTS             = "elements";
-    private static String FIELD_LOOKUPS              = "lookups";
-    private static String FIELD_DIVISION             = "division";
-    private static String FIELD_FILTER               = "filter";
-    private static String FIELD_TIME                 = "time";
-    private static String FIELD_URI                  = "uri";
+    private static final String FIELD_IS_UNIQUE_FIELD_NAME = "is_unique_field_name";
+    private static final String FIELD_ALWAYS_PASS_ROW      = "always_pass_row";
+    private static final String FIELD_HASH_FUNCTION        = "hash_function";
+    private static final String FIELD_PROBABLILITY         = "probability";
+    private static final String FIELD_TRANSACTIONAL        = "transactional";
+    private static final String FIELD_CHECK_ONLY           = "check_only";
+    private static final String FIELD_UNIQUE_FIELDS_NAME   = "field_names";
+    private static final String FIELD_SINGE_FILTER_FILE    = "filter_file";
+    private static final String FIELD_ELEMENTS             = "elements";
+    private static final String FIELD_LOOKUPS              = "lookups";
+    private static final String FIELD_DIVISION             = "division";
+    private static final String FIELD_FILTER               = "filter";
+    private static final String FIELD_TIME                 = "time";
+    private static final String FIELD_URI                  = "uri";
 
     private String elements;
     private String probability;
@@ -58,11 +60,12 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     private String uniqueFieldName;
     private boolean alwaysPassRow;
     private boolean transactional;
+    private boolean checkOnly;
     private String division;
     private String lookups;
-    private String hash;
     private String time;
     private String filter;
+    private String singleFilterFile;
 
     private String[] uniqueFieldsName;
     
@@ -159,10 +162,12 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
 
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_UNIQUE_FIELDS_NAME, getUniqueFieldsNameString()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_IS_UNIQUE_FIELD_NAME, getIsUniqueFieldName()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_SINGE_FILTER_FILE, getSingleFilterFile()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_ALWAYS_PASS_ROW, isAlwaysPassRow()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_TRANSACTIONAL, isTransactional()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_HASH_FUNCTION, getHashFunction()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_PROBABLILITY, getProbability()));
+        bufer.append("   ").append(XMLHandler.addTagValue(FIELD_CHECK_ONLY, isCheckOnly()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_ELEMENTS, getElements()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_DIVISION, getDivision()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_LOOKUPS, getLookups()));
@@ -182,10 +187,12 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         try {
             setUniqueFieldsNameString(XMLHandler.getTagValue(stepnode, FIELD_UNIQUE_FIELDS_NAME));
             setIsUniqueFieldName(XMLHandler.getTagValue(stepnode, FIELD_IS_UNIQUE_FIELD_NAME));
+            setSingleFilterFile(XMLHandler.getTagValue(stepnode, FIELD_SINGE_FILTER_FILE));
             setAlwaysPassRow(XMLHandler.getTagValue(stepnode, FIELD_ALWAYS_PASS_ROW));
             setTransactional(XMLHandler.getTagValue(stepnode, FIELD_TRANSACTIONAL));
             setHashFunction(XMLHandler.getTagValue(stepnode, FIELD_HASH_FUNCTION));
             setProbability(XMLHandler.getTagValue(stepnode, FIELD_PROBABLILITY));
+            setCheckOnly(XMLHandler.getTagValue(stepnode, FIELD_CHECK_ONLY));
             setElements(XMLHandler.getTagValue(stepnode, FIELD_ELEMENTS));
             setDivision(XMLHandler.getTagValue(stepnode, FIELD_DIVISION));
             setLookups(XMLHandler.getTagValue(stepnode, FIELD_LOOKUPS));
@@ -208,10 +215,12 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
 
             setUniqueFieldsNameString(rep.getStepAttributeString(idStep, FIELD_UNIQUE_FIELDS_NAME));
             setIsUniqueFieldName(rep.getStepAttributeString(idStep, FIELD_IS_UNIQUE_FIELD_NAME));
+            setSingleFilterFile(rep.getStepAttributeString(idStep, FIELD_SINGE_FILTER_FILE));
             setAlwaysPassRow(rep.getStepAttributeBoolean(idStep, FIELD_ALWAYS_PASS_ROW));
             setTransactional(rep.getStepAttributeString(idStep, FIELD_TRANSACTIONAL));
             setHashFunction(rep.getStepAttributeString(idStep, FIELD_HASH_FUNCTION));
             setProbability(rep.getStepAttributeString(idStep, FIELD_PROBABLILITY));
+            setCheckOnly(rep.getStepAttributeString(idStep, FIELD_CHECK_ONLY));
             setElements(rep.getStepAttributeString(idStep, FIELD_ELEMENTS));
             setDivision(rep.getStepAttributeString(idStep, FIELD_DIVISION));
             setLookups(rep.getStepAttributeString(idStep, FIELD_LOOKUPS));
@@ -236,10 +245,12 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
 
             rep.saveStepAttribute(idTransformation, idStep, FIELD_UNIQUE_FIELDS_NAME, getUniqueFieldsNameString());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_IS_UNIQUE_FIELD_NAME, getIsUniqueFieldName());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_SINGE_FILTER_FILE, getSingleFilterFile());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_ALWAYS_PASS_ROW, isAlwaysPassRow());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_TRANSACTIONAL, isTransactional());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_HASH_FUNCTION, getHashFunction());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_PROBABLILITY, getProbability());
+            rep.saveStepAttribute(idTransformation, idStep, FIELD_CHECK_ONLY, isCheckOnly());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_ELEMENTS, getElements());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_DIVISION, getDivision());
             rep.saveStepAttribute(idTransformation, idStep, FIELD_LOOKUPS, getLookups());
@@ -265,13 +276,13 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         this.uniqueFieldName = "is_unique";
         this.transactional   = false;
         this.alwaysPassRow   = false;
+        this.checkOnly       = false;
         this.hashFunction    = null;
 
         this.uri        = "tmp://ic-filter/";
         this.division   = "60";
         this.lookups    = "1440";
         this.filter     = "BLOOM";
-        this.hash       = "hash";
         this.time       = "timestamp";
     }
 
@@ -369,6 +380,21 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
         this.transactional = transactional;
     }
 
+    public boolean isCheckOnly()
+    {
+        return checkOnly;
+    }
+
+    public void setCheckOnly(String flag)
+    {
+        this.checkOnly = Boolean.TRUE.toString().equals(flag) || "Y".equals(flag);
+    }
+
+    public void setCheckOnly(boolean flag)
+    {
+        this.checkOnly = flag;
+    }
+
     public boolean isAlwaysPassRow()
     {
         return alwaysPassRow;
@@ -406,6 +432,16 @@ public class FilterPluginMeta extends BaseStepMeta implements StepMetaInterface
     public void setHashFunction(String hashFunction)
     {
         this.hashFunction = hashFunction;
+    }
+
+    public String getSingleFilterFile()
+    {
+        return singleFilterFile;
+    }
+
+    public void setSingleFilterFile(String filterFile)
+    {
+        this.singleFilterFile = filterFile;
     }
 
     public void setUniqueFieldsName(String[] fieldsName)
