@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.nationalfibre</groupId>
+    <groupId>com.instaclick</groupId>
     <artifactId>ic-filter-plugin</artifactId>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.8.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>ic-filter-plugin</name>
     <properties>
@@ -15,7 +15,7 @@
         <guava.version>14.0.1</guava.version>
         <commons-configuration.version>1.6</commons-configuration.version>
         <commons-vfs.version>2.0-20090205</commons-vfs.version>
-        <ic-filter.version>1.7.0-SNAPSHOT</ic-filter.version>
+        <ic-filter.version>1.8.0-SNAPSHOT</ic-filter.version>
         <skipTests>false</skipTests>
         <pluginInstallDir>/Applications/pentaho/pdi/design-tools/data-integration/plugins/steps/ic-filter-plugin</pluginInstallDir>
     </properties>
@@ -27,7 +27,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>net.nationalfibre</groupId>
+            <groupId>com.instaclick</groupId>
             <artifactId>ic-filter</artifactId>
             <version>${ic-filter.version}</version>
         </dependency>
@@ -192,7 +192,7 @@
 
                                 <copy tofile="${project.plugin.deploy}/ic-filter-plugin.jar" file="${project.build.directory}/${project.build.finalName}.jar" />
                                 <copy tofile="${project.plugin.deploylib}/ic-filter.jar">
-                                    <fileset refid="net.nationalfibre:ic-filter:jar" />
+                                    <fileset refid="com.instaclick:ic-filter:jar" />
                                 </copy>
                                 <copy tofile="${project.plugin.deploylib}/hadoop-client.jar">
                                     <fileset refid="org.apache.hadoop:hadoop-client:jar" />
@@ -220,7 +220,7 @@
                                         <include name="**/*.*" />
                                     </fileset>
                                 </copy>
-                                <tar destfile="${project.build.directory}/ic-filter-plugin-pdi-${project.version}.tar" basedir="${project.plugin.deploy}"/>
+                                <zip destfile="${project.build.directory}/ic-filter-plugin-pdi-${project.version}.zip" basedir="${project.plugin.deploy}"/>
                             </target>
                         </configuration>
                         <goals>
