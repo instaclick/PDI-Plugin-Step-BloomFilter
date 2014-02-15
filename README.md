@@ -16,8 +16,8 @@ The build scripts will download Ivy if you do not already have it installed.
 
 This will produce a plugin in ic-filter-plugin/deploydir This archive can then be extracted into your Pentaho Data Integration plugin directory.
 
-Compile Packages
-----------------
+Download Packages
+-----------------
 https://github.com/instaclick/pdi-marketplace-packages
 
 
