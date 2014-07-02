@@ -17,7 +17,7 @@ public class BloomDataFilter extends BaseDataFilter<BloomFilter>
      * @param config            Filter configuration
      * @param filterProvider    Filter provider
      */
-    public BloomDataFilter(FilterConfig config, FilterProvider filterProvider)
+    public BloomDataFilter(final FilterConfig config, final FilterProvider filterProvider)
     {
         super(config, filterProvider, null);
     }
@@ -27,7 +27,7 @@ public class BloomDataFilter extends BaseDataFilter<BloomFilter>
      * @param filterProvider    Filter provider
      * @param hashFunction      Hash function
      */
-    public BloomDataFilter(FilterConfig config, FilterProvider filterProvider, HashFunction hashFunction)
+    public BloomDataFilter(final FilterConfig config, final FilterProvider filterProvider, final HashFunction hashFunction)
     {
         super(config, filterProvider, hashFunction);
     }

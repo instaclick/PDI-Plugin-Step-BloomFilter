@@ -18,6 +18,11 @@ public class SingleBloomDataFilter implements DataFilter
      * filter file name
      */
     protected String filterFileName;
+    
+    /**
+     * filter file name
+     */
+    protected String tempFilterFileName;
 
     /**
      * BloomFilter
@@ -46,10 +51,11 @@ public class SingleBloomDataFilter implements DataFilter
      */
     public SingleBloomDataFilter(FilterConfig config, FilterProvider filterProvider, HashFunction hashFunction)
     {
-        this.config         = config;
-        this.hashFunction   = hashFunction;
-        this.filterProvider = filterProvider;
-        this.filterFileName = config.getFilterFileName() + ".bloom";
+        this.config             = config;
+        this.hashFunction       = hashFunction;
+        this.filterProvider     = filterProvider;
+        this.filterFileName     = config.getFilterFileName() + ".bloom";
+        this.tempFilterFileName = filterFileName + ".tmp";
     }
 
     /**
@@ -137,5 +143,31 @@ public class SingleBloomDataFilter implements DataFilter
         }
 
         this.filter = null;
+    }
+
+    public void flushTemp()
+    {
+        if (this.filter == null) {
+            return;
+        }
+
+        try {
+            filterProvider.saveFilter(this.tempFilterFileName, this.filter);
+        } catch (IOException ex) {
+            Logger.getLogger(SingleBloomDataFilter.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex.getMessage(), ex);
+        }
+
+        this.filter = null;
+    }
+
+    public void moveTemp()
+    {
+        try {
+            filterProvider.moveFilter(tempFilterFileName, filterFileName);
+        } catch (IOException ex) {
+            Logger.getLogger(SingleBloomDataFilter.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex.getMessage(), ex);
+        }
     }
 }

@@ -49,12 +49,12 @@ public class FilterPlugin extends BaseStep implements StepInterface
     /**
      * Transformation Listener
      */
-    private TransListener transListener = new TransListener() {
+    private final TransListener transListener = new TransListener() {
         /**
         * {@inheritDoc}
         */
         @Override
-        public void transFinished(Trans trans) throws KettleException
+        public void transFinished(final Trans trans) throws KettleException
         {
             if ( ! data.isTransactional) {
                 return;
@@ -66,13 +66,11 @@ public class FilterPlugin extends BaseStep implements StepInterface
                 return;
             }
 
-            flushFilter();
+            moveTempFilter();
         }
     };
 
-    /**
-     * {@inheritDoc}
-     */
+
     public FilterPlugin(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta, Trans trans)
     {
         super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
@@ -82,7 +80,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
      * {@inheritDoc}
      */
     @Override
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
+    public boolean processRow(final StepMetaInterface smi, final StepDataInterface sdi) throws KettleException
     {
         meta = (FilterPluginMeta) smi;
         data = (FilterPluginData) sdi;
@@ -101,7 +99,7 @@ public class FilterPlugin extends BaseStep implements StepInterface
             initFilter();
         }
 
-        if (r.length < data.timeFieldIndex || r[data.timeFieldIndex] == null) {
+        if (data.filterType != FilterType.SINGLE_BLOOM && (r.length < data.timeFieldIndex || r[data.timeFieldIndex] == null)) {
             String putErrorMessage = getLinesRead() + " - Ignore invalid timestamp row";
 
             if (isDebug()) {
@@ -139,11 +137,11 @@ public class FilterPlugin extends BaseStep implements StepInterface
             }
         }
 
-        data.hashValue  = hashBuffer.toString();
-        data.timeValue  = Long.parseLong(String.valueOf(r[data.timeFieldIndex]));
-        data.filterData = new Data(data.hashValue, data.timeValue);
         data.isUnique   = 1L;
-        
+        data.hashValue  = hashBuffer.toString();
+        data.timeValue  = (data.filterType != FilterType.SINGLE_BLOOM) ? Long.parseLong(String.valueOf(r[data.timeFieldIndex])) : 0L;
+        data.filterData = new Data(data.hashValue, data.timeValue);
+
         if ( ! filter.add(data.filterData)) {
 
             if (isDebug()) {
@@ -181,11 +179,11 @@ public class FilterPlugin extends BaseStep implements StepInterface
     }
 
     /**
-     * Flush filter files
+     * Write filter files
      */
-    private void flushFilter()
+    private void writeFilters()
     {
-        logMinimal("Flush filters invoked");
+        logMinimal("Write filters invoked");
 
         if (data.isCheckOnly) {
             logMinimal("Check only enabled, Ignoring changes.");
@@ -195,7 +193,45 @@ public class FilterPlugin extends BaseStep implements StepInterface
 
         if (filter != null) {
             filter.flush();
-            logMinimal("Flush filters complete");
+            logMinimal("Write filters complete");
+        }
+    }
+
+    /**
+     * Flush temporary filter files
+     */
+    private void writeTempFilter()
+    {
+        logMinimal("Write temporary filters invoked");
+
+        if (data.isCheckOnly) {
+            logMinimal("Check only enabled, Ignoring changes.");
+
+            return;
+        }
+
+        if (filter != null) {
+            filter.flushTemp();
+            logMinimal("Write temporary filters complete");
+        }
+    }
+
+    /**
+     * Flush temporary filter files
+     */
+    private void moveTempFilter()
+    {
+        logMinimal("Move temporary filters invoked");
+
+        if (data.isCheckOnly) {
+            logMinimal("Check only enabled, Ignoring changes.");
+
+            return;
+        }
+
+        if (filter != null) {
+            filter.moveTemp();
+            logMinimal("Move temporary filters complete");
         }
     }
 
@@ -227,10 +263,6 @@ public class FilterPlugin extends BaseStep implements StepInterface
         ProviderType pType      = ProviderType.VFS;
         FilterType fType;
 
-        if (timeFieldName == null) {
-            throw new FilterException("Unable to retrieve timestamp field name");
-        }
-
         if (uriStr == null) {
             throw new FilterException("Unable to retrieve filter uri");
         }
@@ -250,6 +282,10 @@ public class FilterPlugin extends BaseStep implements StepInterface
         } catch (Exception e) {
             fType = FilterType.BLOOM;
             logError(e.getMessage());
+        }
+
+        if (timeFieldName == null && fType != FilterType.SINGLE_BLOOM) {
+            throw new FilterException("Unable to retrieve timestamp field name");
         }
 
         FilterConfig config = FilterConfig.create()
@@ -276,9 +312,10 @@ public class FilterPlugin extends BaseStep implements StepInterface
         data.isAlwaysPassRow  = meta.isAlwaysPassRow();
         data.isTransactional  = meta.isTransactional();
         data.isCheckOnly      = meta.isCheckOnly();
+        data.filterType       = fType;
         data.uniqueCount      = 0L;
 
-        if (data.timeFieldIndex < 0) {
+        if (data.timeFieldIndex < 0 && fType != FilterType.SINGLE_BLOOM) {
             throw new FilterException("Unable to retrieve time field : " + timeFieldName);
         }
 
@@ -322,14 +359,17 @@ public class FilterPlugin extends BaseStep implements StepInterface
      * {@inheritDoc}
      */
     @Override
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi)
+    public void dispose(final StepMetaInterface smi, final StepDataInterface sdi)
     {
         meta = (FilterPluginMeta) smi;
         data = (FilterPluginData) sdi;
 
         if ( ! data.isTransactional) {
-            flushFilter();
+            writeFilters();
+            return;
         }
+
+        writeTempFilter();
 
         super.dispose(smi, sdi);
     }

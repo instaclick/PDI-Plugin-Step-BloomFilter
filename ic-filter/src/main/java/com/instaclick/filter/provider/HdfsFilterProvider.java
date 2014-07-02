@@ -112,9 +112,9 @@ public class HdfsFilterProvider implements FilterProvider
      */
     public void saveFilter(String name, Serializable filter) throws IOException
     {
-        FileSystem fs   = getHdfs();
-        Path folder     = getPath();
-        Path file       = getPath(name);
+        final FileSystem fs   = getHdfs();
+        final Path folder     = getPath();
+        final Path file       = getPath(name);
 
         if ( ! fs.exists(folder)) {
             fs.mkdirs(folder);
@@ -126,5 +126,17 @@ public class HdfsFilterProvider implements FilterProvider
         objectOutputStream.writeObject(filter);
         objectOutputStream.close();
         fileOutputStream.close();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void moveFilter(final String source, final String target) throws IOException
+    {
+        final FileSystem fs   = getHdfs();
+        final Path sourcePath = getPath(source);
+        final Path targetPath = getPath(target);
+
+        fs.rename(sourcePath, targetPath);
     }
 }

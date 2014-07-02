@@ -36,4 +36,11 @@ public interface FilterProvider
      * @throws java.io.IOException
      */
     public void saveFilter(String name, Serializable filter) throws IOException;
+
+    /**
+     * @param source
+     * @param target
+     * @throws IOException 
+     */
+    public void moveFilter(final String source, final String target) throws IOException;
 }

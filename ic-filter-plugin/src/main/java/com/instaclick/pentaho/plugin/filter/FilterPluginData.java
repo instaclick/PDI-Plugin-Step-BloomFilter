@@ -1,6 +1,7 @@
 package com.instaclick.pentaho.plugin.filter;
 
 import com.instaclick.filter.Data;
+import com.instaclick.filter.FilterType;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
@@ -66,6 +67,8 @@ public class FilterPluginData extends BaseStepData implements StepDataInterface
      * This step will never flush the filters.
      */
     public boolean isCheckOnly = false;
+
+    public FilterType filterType;
 
     public FilterPluginData()
     {

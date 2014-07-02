@@ -15,12 +15,12 @@ public class InMemoryFilterProvider implements FilterProvider
     /**
      * Map of {@link BloomFilter}
      */
-    private Map<String, Serializable> map = new HashMap<String, Serializable>();
-
+    private final Map<String, Serializable> map = new HashMap<String, Serializable>();
+    
     /**
      * {@inheritDoc}
      */
-    public boolean hasFilter(String name) throws IOException
+    public boolean hasFilter(final String name) throws IOException
     {
         return map.containsKey(name);
     }
@@ -28,7 +28,7 @@ public class InMemoryFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public Serializable loadFilter(String name) throws IOException
+    public Serializable loadFilter(final String name) throws IOException
     {
         return map.get(name);
     }
@@ -36,8 +36,14 @@ public class InMemoryFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public void saveFilter(String name, Serializable filter) throws IOException
+    public void saveFilter(final String name, Serializable filter) throws IOException
     {
         map.put(name, filter);
+    }
+
+    public void moveFilter(final String source, final String target) throws IOException
+    {
+        map.put(target, map.get(source));
+        map.remove(source);
     }
 }

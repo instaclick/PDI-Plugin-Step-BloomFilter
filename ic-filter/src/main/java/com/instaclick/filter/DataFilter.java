@@ -29,4 +29,14 @@ public interface DataFilter
      * Flushes the filter data, this operation should be invoked at the end of the filter
      */
     public void flush();
+
+    /**
+     * Flushes the filter data, to temporary location
+     */
+    public void flushTemp();
+
+    /**
+     * Move temporary data to actual destination
+     */
+    public void moveTemp();
 }

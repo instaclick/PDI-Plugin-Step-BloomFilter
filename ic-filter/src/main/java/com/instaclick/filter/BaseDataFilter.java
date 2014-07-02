@@ -1,5 +1,7 @@
 package com.instaclick.filter;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import com.google.common.hash.HashFunction;
 import java.io.IOException;
 import java.io.Serializable;
@@ -17,6 +19,8 @@ import com.instaclick.filter.provider.FilterProvider;
  */
 abstract class BaseDataFilter <T extends Serializable> implements DataFilter
 {
+    final Log logger = LogFactory.getLog(getClass());
+
     /**
      * Filter configuration
      */
@@ -26,6 +30,11 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
      * Set of filters that should be flushed
      */
     protected Set<String> dirtyFilters;
+
+    /**
+     * Map of temporary filters that should be renamed
+     */
+    protected Map<String, String> tempFilters;
 
     /**
      * Filter provider responsible for save and retrieve filter
@@ -52,7 +61,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
      * @param filterProvider    Filter provider
      * @param hashFunction      Hash function
      */
-    public BaseDataFilter(FilterConfig config, FilterProvider filterProvider, HashFunction hashFunction)
+    public BaseDataFilter(final FilterConfig config, final FilterProvider filterProvider, final HashFunction hashFunction)
     {
         this.config          = config;
         this.hashFunction    = hashFunction;
@@ -60,6 +69,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
         this.dirtyFilters    = new HashSet<String>();
         this.filters         = new HashMap<String, FilterAdapter<T>>();
         this.containsFilters = new HashMap<Integer, Boolean>();
+        this.tempFilters     = new HashMap<String, String>();
     }
 
     /**
@@ -182,6 +192,9 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
         }
 
         try {
+
+            logger.debug("Loading filter : " + name);
+            
             T filter = (T) filterProvider.loadFilter(name);
 
             filters.put(name, createFilterAdapter());
@@ -190,6 +203,7 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
             return filters.get(name);
 
         } catch (IOException e) {
+            logger.error(this, e);
             throw new RuntimeException(e.getMessage(), e);
         }
     }
@@ -308,14 +322,65 @@ abstract class BaseDataFilter <T extends Serializable> implements DataFilter
     public void flush()
     {
         try {
-            for (String name : dirtyFilters) {
+            for (final String name : dirtyFilters) {
+                logger.debug("Flushing filter : " + name);
                 filterProvider.saveFilter(name, filters.get(name).getFilter());
             }
         } catch (IOException e) {
+            logger.error(this, e);
             throw new RuntimeException(e.getMessage(), e);
         }
 
         filters.clear();
+        dirtyFilters.clear();
+        containsFilters.clear();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void flushTemp()
+    {
+        try {
+            for (final String name : dirtyFilters) {
+                final String tmpName = name + ".tmp";
+
+                logger.debug("Flushing filter : " + tmpName);
+
+                filterProvider.saveFilter(tmpName, filters.get(name).getFilter());
+                tempFilters.put(tmpName, name);
+            }
+        } catch (IOException e) {
+            logger.error(this, e);
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        filters.clear();
+        dirtyFilters.clear();
+        containsFilters.clear();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void moveTemp()
+    {
+        try {
+            for (Map.Entry<String, String> entry : tempFilters.entrySet()) {
+                final String tempFile   = entry.getKey();
+                final String targetFile = entry.getValue();
+
+                logger.debug("Moving temporary filter " + tempFile + " to " + targetFile);
+                filterProvider.moveFilter(tempFile, targetFile);
+            }
+
+        } catch (IOException e) {
+            logger.error(this, e);
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        filters.clear();
+        tempFilters.clear();
         dirtyFilters.clear();
         containsFilters.clear();
     }

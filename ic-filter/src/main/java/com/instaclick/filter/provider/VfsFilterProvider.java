@@ -28,7 +28,7 @@ public class VfsFilterProvider implements FilterProvider
      *
      * @param uri
      */
-    public VfsFilterProvider(String uri)
+    public VfsFilterProvider(final String uri)
     {
         this.uri = uri;
     }
@@ -54,7 +54,7 @@ public class VfsFilterProvider implements FilterProvider
      * @return
      * @throws IOException
      */
-    private FileObject getFile(String name) throws IOException
+    private FileObject getFile(final String name) throws IOException
     {
         try {
             return KettleVFS.getFileObject(this.getFile() + "/" + name);
@@ -66,7 +66,7 @@ public class VfsFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public boolean hasFilter(String name) throws IOException
+    public boolean hasFilter(final String name) throws IOException
     {
         return getFile(name).exists();
     }
@@ -74,11 +74,11 @@ public class VfsFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public Serializable loadFilter(String name) throws IOException
+    public Serializable loadFilter(final String name) throws IOException
     {
-        FileObject file                     = getFile(name);
-        InputStream fileInputStream         = file.getContent().getInputStream();
-        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+        final FileObject file                     = getFile(name);
+        final InputStream fileInputStream         = file.getContent().getInputStream();
+        final ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
         try {
             Serializable filter = (Serializable) objectInputStream.readObject();
@@ -96,10 +96,10 @@ public class VfsFilterProvider implements FilterProvider
     /**
      * {@inheritDoc}
      */
-    public void saveFilter(String name, Serializable filter) throws IOException
+    public void saveFilter(final String name, final Serializable filter) throws IOException
     {
-        FileObject folder = getFile();
-        FileObject file   = getFile(name);
+        final FileObject folder = getFile();
+        final FileObject file   = getFile(name);
 
         if ( ! folder.exists()) {
             folder.createFolder();
@@ -109,12 +109,23 @@ public class VfsFilterProvider implements FilterProvider
             file.createFile();
         }
 
-        OutputStream fileOutputStream           = file.getContent().getOutputStream();
-        ObjectOutputStream objectOutputStream   = new ObjectOutputStream(fileOutputStream);
+        final OutputStream fileOutputStream           = file.getContent().getOutputStream();
+        final ObjectOutputStream objectOutputStream   = new ObjectOutputStream(fileOutputStream);
 
         objectOutputStream.writeObject(filter);
         objectOutputStream.close();
         fileOutputStream.close();
         file.close();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void moveFilter(final String source, final String target) throws IOException
+    {
+        final FileObject sourceFile = getFile(source);
+        final FileObject targetFile = getFile(target);
+        
+        sourceFile.moveTo(targetFile);
     }
 }
